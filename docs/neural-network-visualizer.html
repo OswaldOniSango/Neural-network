@@ -354,21 +354,43 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.93rem;
+            table-layout: fixed;
         }
 
         .weight-table th,
         .weight-table td,
         .contribution-list td {
             border-bottom: 1px solid rgba(31, 41, 51, 0.08);
-            padding: 8px 0;
+            padding: 8px 10px 8px 0;
             text-align: left;
             font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            vertical-align: top;
         }
 
         .weight-table th {
             color: var(--muted);
             font-family: "Avenir Next", "Trebuchet MS", sans-serif;
             font-weight: 700;
+        }
+
+        .weight-table th:first-child,
+        .weight-table td:first-child,
+        .contribution-list td:first-child {
+            width: 78px;
+            white-space: nowrap;
+            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+            font-weight: 700;
+        }
+
+        .weight-table td:not(:first-child),
+        .contribution-list td:not(:first-child) {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .weight-card,
+        .raw-card {
+            overflow-x: auto;
         }
 
         .raw-card pre {
@@ -418,6 +440,19 @@
                 padding: 22px;
             }
         }
+
+        @media (max-width: 640px) {
+            .weight-table,
+            .contribution-list {
+                font-size: 0.82rem;
+            }
+
+            .weight-table th:first-child,
+            .weight-table td:first-child,
+            .contribution-list td:first-child {
+                width: 64px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -426,7 +461,7 @@
         <div class="hero-grid">
             <div>
                 <p class="small-label">Modelo entrenado para aproximar una suma</p>
-                <h1>Asi piensa tu red neuronal</h1>
+                <h1>Entendiento nuestra red neuronal</h1>
                 <p class="lede">
                     Esta pagina traduce tus pesos y biases a algo visual. El modelo toma dos entradas,
                     las pasa por 6 neuronas ocultas con funcion sigmoide y produce una salida lineal.
