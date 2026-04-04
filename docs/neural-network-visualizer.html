@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Red Neuronal</title>
+    <style>
+        :root {
+            --bg: #f4efe6;
+            --panel: rgba(255, 250, 242, 0.9);
+            --panel-strong: #fffaf2;
+            --ink: #1f2933;
+            --muted: #6b7280;
+            --accent: #0f766e;
+            --accent-soft: rgba(15, 118, 110, 0.14);
+            --warm: #b45309;
+            --warm-soft: rgba(180, 83, 9, 0.12);
+            --negative: #b42318;
+            --negative-soft: rgba(180, 35, 24, 0.14);
+            --line: rgba(31, 41, 51, 0.12);
+            --shadow: 0 24px 60px rgba(31, 41, 51, 0.12);
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 32%),
+                radial-gradient(circle at top right, rgba(180, 83, 9, 0.18), transparent 24%),
+                linear-gradient(180deg, #f8f4ed 0%, #efe7dc 100%);
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 32px auto 64px;
+        }
+
+        .hero,
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero {
+            border-radius: 36px;
+            padding: 32px;
+            display: grid;
+            gap: 24px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 0.9fr;
+            gap: 24px;
+        }
+
+        h1, h2, h3, p {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: clamp(2.1rem, 4vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            max-width: 11ch;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            line-height: 1.05;
+            margin-bottom: 14px;
+        }
+
+        h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .lede {
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            max-width: 62ch;
+        }
+
+        .chip-row,
+        .summary-grid,
+        .controls-grid,
+        .metrics-grid,
+        .training-grid,
+        .legend,
+        .weight-columns,
+        .raw-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .chip-row {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+
+        .chip {
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+
+        .chip strong {
+            display: block;
+            font-size: 1.05rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .summary-card,
+        .metric,
+        .training-step,
+        .neuron-card,
+        .weight-card,
+        .raw-card {
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+        }
+
+        .summary-card span,
+        .metric-label,
+        .small-label,
+        .explain,
+        .weight-meta,
+        .raw-card pre {
+            color: var(--muted);
+        }
+
+        .summary-card strong,
+        .metric-value,
+        .formula,
+        .big-number {
+            display: block;
+            margin-top: 8px;
+            font-size: 1.55rem;
+            line-height: 1;
+        }
+
+        .panel {
+            border-radius: var(--radius-xl);
+            margin-top: 24px;
+            padding: 28px;
+        }
+
+        .controls-grid {
+            grid-template-columns: minmax(280px, 360px) 1fr;
+            align-items: start;
+        }
+
+        .control-card {
+            background: linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.7));
+            border: 1px solid rgba(15, 118, 110, 0.18);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+        }
+
+        .slider-block + .slider-block {
+            margin-top: 18px;
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        .slider-hint,
+        .explainer-list li,
+        .formula-note,
+        .training-step p,
+        .raw-card p {
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .metrics-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .metric {
+            min-height: 100%;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .network-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 248, 241, 0.96));
+            border: 1px solid var(--line);
+            padding: 18px;
+        }
+
+        svg {
+            width: 100%;
+            min-width: 780px;
+            height: auto;
+            display: block;
+        }
+
+        .legend {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            margin-top: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .legend-swatch {
+            width: 42px;
+            height: 10px;
+            border-radius: 999px;
+        }
+
+        .formula-block {
+            margin-top: 24px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .formula-card {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+        }
+
+        .formula {
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .neurons-grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+        }
+
+        .neuron-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neuron-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .activation-bar {
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(31, 41, 51, 0.08);
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .activation-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #0f766e, #14b8a6);
+        }
+
+        .neuron-stats {
+            display: grid;
+            gap: 8px;
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            font-size: 0.9rem;
+        }
+
+        .value-positive {
+            color: var(--accent);
+        }
+
+        .value-negative {
+            color: var(--negative);
+        }
+
+        .training-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            margin-top: 18px;
+        }
+
+        .training-step {
+            position: relative;
+            padding-top: 48px;
+        }
+
+        .step-number {
+            position: absolute;
+            top: 16px;
+            left: 18px;
+            width: 26px;
+            height: 26px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .weight-columns,
+        .raw-grid {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            margin-top: 18px;
+        }
+
+        .weight-table,
+        .contribution-list {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.93rem;
+        }
+
+        .weight-table th,
+        .weight-table td,
+        .contribution-list td {
+            border-bottom: 1px solid rgba(31, 41, 51, 0.08);
+            padding: 8px 0;
+            text-align: left;
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+        }
+
+        .weight-table th {
+            color: var(--muted);
+            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+            font-weight: 700;
+        }
+
+        .raw-card pre {
+            margin: 14px 0 0;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+        }
+
+        .callout {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(90deg, rgba(180, 83, 9, 0.12), rgba(255, 255, 255, 0.7));
+            border: 1px solid rgba(180, 83, 9, 0.18);
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            margin: 14px 0 0;
+            padding-left: 20px;
+        }
+
+        li + li {
+            margin-top: 8px;
+        }
+
+        @media (max-width: 920px) {
+            .hero-grid,
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page {
+                width: min(100% - 20px, 1180px);
+                margin-top: 20px;
+            }
+
+            .hero,
+            .panel {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <div class="hero-grid">
+            <div>
+                <p class="small-label">Modelo entrenado para aproximar una suma</p>
+                <h1>Asi piensa tu red neuronal</h1>
+                <p class="lede">
+                    Esta pagina traduce tus pesos y biases a algo visual. El modelo toma dos entradas,
+                    las pasa por 6 neuronas ocultas con funcion sigmoide y produce una salida lineal.
+                    En este caso, aprendio a aproximar <strong>y = x1 + x2</strong>.
+                </p>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span>Arquitectura</span>
+                    <strong>2 -> 6 -> 1</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Activacion oculta</span>
+                    <strong>Sigmoid</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Salida</span>
+                    <strong>Lineal</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Objetivo</span>
+                    <strong>Sumar</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Learning rate</span>
+                    <strong>0.1</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Epocas</span>
+                    <strong>20000</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="chip-row">
+            <div class="chip"><strong>Peso</strong>Cuanto influye una neurona sobre otra.</div>
+            <div class="chip"><strong>Bias</strong>Desplaza la activacion aunque la entrada sea 0.</div>
+            <div class="chip"><strong>Forward pass</strong>Calculo desde las entradas hasta la salida.</div>
+            <div class="chip"><strong>Backpropagation</strong>Ajuste de pesos usando el error.</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>1. Proba la red con tus propias entradas</h2>
+        <div class="controls-grid">
+            <div class="control-card">
+                <div class="slider-block">
+                    <label for="input1">
+                        <span>Entrada x1</span>
+                        <span id="input1Value">0.30</span>
+                    </label>
+                    <input id="input1" type="range" min="0" max="1" step="0.01" value="0.30">
+                </div>
+
+                <div class="slider-block">
+                    <label for="input2">
+                        <span>Entrada x2</span>
+                        <span id="input2Value">0.70</span>
+                    </label>
+                    <input id="input2" type="range" min="0" max="1" step="0.01" value="0.70">
+                </div>
+
+                <p class="slider-hint">
+                    Cada vez que moves un slider, la pagina recalcula todas las neuronas ocultas y la salida final
+                    usando exactamente los pesos que pegaste.
+                </p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-label">Suma esperada</div>
+                    <div class="metric-value" id="expectedValue">1.00</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Prediccion del modelo</div>
+                    <div class="metric-value" id="predictionValue">0.99</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Error absoluto</div>
+                    <div class="metric-value" id="errorValue">0.01</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Bias de salida</div>
+                    <div class="metric-value" id="outputBiasValue">-0.45</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="network-wrapper" style="margin-top: 22px;">
+            <svg id="networkSvg" viewBox="0 0 960 450" aria-label="Diagrama de la red neuronal"></svg>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:#0f766e;"></span> Peso positivo: empuja la activacion hacia arriba.</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#b42318;"></span> Peso negativo: empuja la activacion hacia abajo.</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(90deg, rgba(31,41,51,0.16), rgba(31,41,51,0.85));"></span> Mas grosor y opacidad = mas influencia.</div>
+        </div>
+
+        <div class="formula-block">
+            <div class="formula-card">
+                <h3>Formula real de cada neurona oculta</h3>
+                <p class="formula" id="hiddenFormula"></p>
+                <p class="formula-note">
+                    Primero se calcula la suma ponderada <code>z</code>. Luego se aplica la sigmoide:
+                    <code>sigmoid(z) = 1 / (1 + e^-z)</code>. Eso comprime el valor al rango 0..1.
+                </p>
+            </div>
+
+            <div class="formula-card">
+                <h3>Formula real de la salida</h3>
+                <p class="formula" id="outputFormula"></p>
+                <p class="formula-note">
+                    La salida final no usa sigmoide. Es lineal, por eso puede aproximar mejor una suma como 1.3, 1.8 o 2.0.
+                </p>
+            </div>
+        </div>
+
+        <div class="neurons-grid" id="neuronsGrid"></div>
+    </section>
+
+    <section class="panel">
+        <h2>2. Que significan tus pesos y biases</h2>
+        <div class="weight-columns">
+            <div class="weight-card">
+                <h3>Pesos entrada -> capa oculta</h3>
+                <p class="weight-meta">Cada columna representa una neurona oculta. Cada fila te dice como la entrada x1 o x2 la empuja.</p>
+                <table class="weight-table" id="inputHiddenTable"></table>
+            </div>
+
+            <div class="weight-card">
+                <h3>Pesos capa oculta -> salida</h3>
+                <p class="weight-meta">Estos pesos dicen que neuronas ocultas ayudan mas a construir la respuesta final.</p>
+                <table class="weight-table" id="hiddenOutputTable"></table>
+            </div>
+
+            <div class="weight-card">
+                <h3>Contribucion actual a la salida</h3>
+                <p class="weight-meta">Con los sliders actuales, esto es lo que realmente esta aportando cada neurona oculta.</p>
+                <table class="contribution-list" id="contributionTable"></table>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Lectura rapida de tu modelo</strong>
+            <p id="modelInsight" class="slider-hint"></p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>3. Como fue el entrenamiento</h2>
+        <p class="lede" style="max-width: 72ch;">
+            El codigo Java entrena la red con ejemplos como <code>[0.3, 0.4] -> 0.7</code>.
+            En cada epoca, la red hace una prediccion, calcula cuanto se equivoco y mueve un poco sus pesos
+            para acercarse al resultado correcto.
+        </p>
+
+        <div class="training-grid">
+            <article class="training-step">
+                <div class="step-number">1</div>
+                <h3>Inicializacion aleatoria</h3>
+                <p>Los pesos arrancan con valores aleatorios entre -1 y 1. Al principio la red no sabe sumar.</p>
+            </article>
+            <article class="training-step">
+                <div class="step-number">2</div>
+                <h3>Forward pass</h3>
+                <p>Las entradas pasan por la capa oculta. Cada neurona combina entradas, pesos y bias, y luego aplica sigmoide.</p>
+            </article>
+            <article class="training-step">
+                <div class="step-number">3</div>
+                <h3>Error de salida</h3>
+                <p>El error es <code>esperado - predicho</code>. Si la red da menos de lo correcto, varios pesos deben aumentar.</p>
+            </article>
+            <article class="training-step">
+                <div class="step-number">4</div>
+                <h3>Backpropagation</h3>
+                <p>Ese error se reparte hacia atras. Asi cada neurona oculta recibe una senal de cuanto colaboro en el error.</p>
+            </article>
+            <article class="training-step">
+                <div class="step-number">5</div>
+                <h3>Actualizacion</h3>
+                <p>El codigo ajusta pesos y biases con la regla: <code>nuevo = viejo + learningRate * correccion</code>.</p>
+            </article>
+            <article class="training-step">
+                <div class="step-number">6</div>
+                <h3>Repeticion</h3>
+                <p>Esto se repite por 20000 epocas. Poco a poco la red encuentra una combinacion que aproxima la suma.</p>
+            </article>
+        </div>
+
+        <div class="formula-block">
+            <div class="formula-card">
+                <h3>Las formulas del entrenamiento en tu codigo</h3>
+                <p class="formula">outputError = esperado - salida</p>
+                <p class="formula">hiddenError[j] = (outputError * weightHiddenOutput[j]) * hidden[j] * (1 - hidden[j])</p>
+                <p class="formula">weightHiddenOutput[j] += learningRate * outputError * hidden[j]</p>
+                <p class="formula">weightInputHidden[i][j] += learningRate * hiddenError[j] * input[i]</p>
+                <p class="formula-note">
+                    Eso es justamente backpropagation con descenso por gradiente en una red chica de regresion.
+                </p>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Ojo con el alcance del entrenamiento</strong>
+            <p class="slider-hint">
+                Esta red fue entrenada con solo 12 ejemplos, todos en el rango 0.0 a 1.0.
+                Dentro de ese rango suele aproximar bien la suma. Fuera de ese rango no hay garantia:
+                la red no "entiende" matematicamente la suma, solo aprendio un patron numerico a partir de esos datos.
+            </p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>4. Tus pesos en bruto</h2>
+        <div class="raw-grid">
+            <div class="raw-card">
+                <h3>weightsInputHidden</h3>
+                <p>Dos filas porque hay 2 entradas. Seis columnas porque hay 6 neuronas ocultas.</p>
+                <pre id="rawInputHidden"></pre>
+            </div>
+
+            <div class="raw-card">
+                <h3>biasHidden</h3>
+                <p>Un bias por cada neurona oculta.</p>
+                <pre id="rawBiasHidden"></pre>
+            </div>
+
+            <div class="raw-card">
+                <h3>weightsHiddenOutput y biasOutput</h3>
+                <p>Cada neurona oculta aporta algo a la salida final.</p>
+                <pre id="rawOutputWeights"></pre>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const model = {
+        weightsInputHidden: [
+            [-0.3470851175, 1.2406841454, 1.0543798210, 1.0098432140, -0.2093473940, 0.4887988224],
+            [-0.9494535745, 0.7221585391, 0.9295971657, 0.0277271336, -0.7640599356, -0.6429553628]
+        ],
+        biasHidden: [-0.4887272718, -2.0206348785, 0.3452941189, 0.5330659793, -0.2801939293, -0.0812442658],
+        weightsHiddenOutput: [-1.3025728209, 2.5336399057, 1.4388755137, 0.5718853181, -0.7580522540, -0.4640866712],
+        biasOutput: -0.4544761964
+    };
+
+    const svg = document.getElementById("networkSvg");
+    const neuronsGrid = document.getElementById("neuronsGrid");
+    const input1 = document.getElementById("input1");
+    const input2 = document.getElementById("input2");
+
+    function sigmoid(x) {
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    function formatNumber(value, digits = 4) {
+        return Number(value).toFixed(digits);
+    }
+
+    function signed(value, digits = 4) {
+        const fixed = Number(value).toFixed(digits);
+        return value >= 0 ? `+${fixed}` : fixed;
+    }
+
+    function weightColor(weight) {
+        return weight >= 0 ? "#0f766e" : "#b42318";
+    }
+
+    function influenceOpacity(value, maxValue) {
+        if (maxValue === 0) {
+            return 0.18;
+        }
+        return 0.18 + (Math.abs(value) / maxValue) * 0.72;
+    }
+
+    function thickness(value, maxValue) {
+        if (maxValue === 0) {
+            return 1.5;
+        }
+        return 1.4 + (Math.abs(value) / maxValue) * 7.6;
+    }
+
+    function computeState(x1, x2) {
+        const hidden = model.biasHidden.map((bias, j) => {
+            const z = x1 * model.weightsInputHidden[0][j]
+                + x2 * model.weightsInputHidden[1][j]
+                + bias;
+            const activation = sigmoid(z);
+            return {
+                index: j,
+                z,
+                activation,
+                contributionFromX1: x1 * model.weightsInputHidden[0][j],
+                contributionFromX2: x2 * model.weightsInputHidden[1][j],
+                bias,
+                outputWeight: model.weightsHiddenOutput[j]
+            };
+        });
+
+        const outputContributions = hidden.map((neuron) => ({
+            index: neuron.index,
+            activation: neuron.activation,
+            outputWeight: neuron.outputWeight,
+            contribution: neuron.activation * neuron.outputWeight
+        }));
+
+        const prediction = outputContributions.reduce(
+            (sum, item) => sum + item.contribution,
+            model.biasOutput
+        );
+
+        return {
+            x1,
+            x2,
+            hidden,
+            outputContributions,
+            prediction,
+            expected: x1 + x2
+        };
+    }
+
+    function createNode(cx, cy, label, value, kind) {
+        const fill = kind === "input"
+            ? "#fff4de"
+            : kind === "output"
+                ? "#dcfce7"
+                : "#ffffff";
+
+        return `
+            <g>
+                <circle cx="${cx}" cy="${cy}" r="31" fill="${fill}" stroke="rgba(31,41,51,0.18)" stroke-width="2"></circle>
+                <text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2933">${label}</text>
+                <text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="12" fill="#6b7280">${formatNumber(value, 3)}</text>
+            </g>
+        `;
+    }
+
+    function drawNetwork(state) {
+        const inputNodes = [
+            { x: 120, y: 140, label: "x1", value: state.x1 },
+            { x: 120, y: 310, label: "x2", value: state.x2 }
+        ];
+
+        const hiddenNodes = state.hidden.map((neuron, index) => ({
+            x: 480,
+            y: 70 + index * 62,
+            label: `h${index + 1}`,
+            value: neuron.activation
+        }));
+
+        const outputNode = { x: 830, y: 225, label: "y", value: state.prediction };
+
+        const inputContribs = [];
+        const outputContribs = [];
+
+        state.hidden.forEach((neuron, j) => {
+            inputContribs.push(neuron.contributionFromX1, neuron.contributionFromX2);
+            outputContribs.push(neuron.activation * neuron.outputWeight);
+        });
+
+        const maxInputContrib = Math.max(...inputContribs.map(Math.abs), 0);
+        const maxOutputContrib = Math.max(...outputContribs.map(Math.abs), 0);
+
+        const lines = [];
+
+        inputNodes.forEach((inputNode, i) => {
+            hiddenNodes.forEach((hiddenNode, j) => {
+                const weight = model.weightsInputHidden[i][j];
+                const contribution = i === 0
+                    ? state.hidden[j].contributionFromX1
+                    : state.hidden[j].contributionFromX2;
+
+                lines.push(`
+                    <line x1="${inputNode.x + 32}" y1="${inputNode.y}" x2="${hiddenNode.x - 32}" y2="${hiddenNode.y}"
+                        stroke="${weightColor(weight)}"
+                        stroke-width="${thickness(contribution, maxInputContrib)}"
+                        stroke-opacity="${influenceOpacity(contribution, maxInputContrib)}"
+                        stroke-linecap="round"></line>
+                `);
+            });
+        });
+
+        hiddenNodes.forEach((hiddenNode, j) => {
+            const weight = model.weightsHiddenOutput[j];
+            const contribution = state.hidden[j].activation * weight;
+            lines.push(`
+                <line x1="${hiddenNode.x + 32}" y1="${hiddenNode.y}" x2="${outputNode.x - 32}" y2="${outputNode.y}"
+                    stroke="${weightColor(weight)}"
+                    stroke-width="${thickness(contribution, maxOutputContrib)}"
+                    stroke-opacity="${influenceOpacity(contribution, maxOutputContrib)}"
+                    stroke-linecap="round"></line>
+            `);
+        });
+
+        svg.innerHTML = `
+            <rect x="0" y="0" width="960" height="450" rx="24" fill="transparent"></rect>
+            <text x="65" y="40" font-size="16" font-weight="700" fill="#1f2933">Entradas</text>
+            <text x="430" y="40" font-size="16" font-weight="700" fill="#1f2933">Capa oculta (sigmoid)</text>
+            <text x="790" y="40" font-size="16" font-weight="700" fill="#1f2933">Salida lineal</text>
+            ${lines.join("")}
+            ${inputNodes.map((node) => createNode(node.x, node.y, node.label, node.value, "input")).join("")}
+            ${hiddenNodes.map((node) => createNode(node.x, node.y, node.label, node.value, "hidden")).join("")}
+            ${createNode(outputNode.x, outputNode.y, outputNode.label, outputNode.value, "output")}
+            <text x="830" y="278" text-anchor="middle" font-size="12" fill="#6b7280">bias salida = ${formatNumber(model.biasOutput, 3)}</text>
+        `;
+    }
+
+    function renderNeuronCards(state) {
+        neuronsGrid.innerHTML = state.hidden.map((neuron) => {
+            const activationPercent = neuron.activation * 100;
+            return `
+                <article class="neuron-card">
+                    <div class="neuron-top">
+                        <h3>Neurona h${neuron.index + 1}</h3>
+                        <div class="${neuron.outputWeight >= 0 ? "value-positive" : "value-negative"}">
+                            w salida ${signed(neuron.outputWeight, 3)}
+                        </div>
+                    </div>
+                    <p class="explain">
+                        z = (${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][neuron.index], 3)})
+                        + (${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][neuron.index], 3)})
+                        + ${formatNumber(neuron.bias, 3)}
+                    </p>
+                    <div class="activation-bar">
+                        <div class="activation-fill" style="width:${activationPercent}%;"></div>
+                    </div>
+                    <div class="neuron-stats">
+                        <div>z = ${formatNumber(neuron.z, 4)}</div>
+                        <div>a = sigmoid(z) = ${formatNumber(neuron.activation, 4)}</div>
+                        <div>aporte a salida = ${signed(neuron.activation * neuron.outputWeight, 4)}</div>
+                    </div>
+                </article>
+            `;
+        }).join("");
+    }
+
+    function renderTables(state) {
+        const inputHiddenTable = document.getElementById("inputHiddenTable");
+        const hiddenOutputTable = document.getElementById("hiddenOutputTable");
+        const contributionTable = document.getElementById("contributionTable");
+
+        inputHiddenTable.innerHTML = `
+            <tr>
+                <th></th>
+                ${model.biasHidden.map((_, j) => `<th>h${j + 1}</th>`).join("")}
+            </tr>
+            <tr>
+                <th>x1</th>
+                ${model.weightsInputHidden[0].map((weight) => `<td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 3)}</td>`).join("")}
+            </tr>
+            <tr>
+                <th>x2</th>
+                ${model.weightsInputHidden[1].map((weight) => `<td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 3)}</td>`).join("")}
+            </tr>
+            <tr>
+                <th>bias</th>
+                ${model.biasHidden.map((bias) => `<td class="${bias >= 0 ? "value-positive" : "value-negative"}">${signed(bias, 3)}</td>`).join("")}
+            </tr>
+        `;
+
+        hiddenOutputTable.innerHTML = `
+            <tr><th>Neurona</th><th>Peso a salida</th></tr>
+            ${model.weightsHiddenOutput.map((weight, j) => `
+                <tr>
+                    <td>h${j + 1}</td>
+                    <td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 4)}</td>
+                </tr>
+            `).join("")}
+            <tr>
+                <td>bias salida</td>
+                <td class="${model.biasOutput >= 0 ? "value-positive" : "value-negative"}">${signed(model.biasOutput, 4)}</td>
+            </tr>
+        `;
+
+        const sorted = [...state.outputContributions].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+        contributionTable.innerHTML = `
+            ${sorted.map((item) => `
+                <tr>
+                    <td>h${item.index + 1}</td>
+                    <td>${formatNumber(item.activation, 4)} * ${signed(item.outputWeight, 3)}</td>
+                    <td class="${item.contribution >= 0 ? "value-positive" : "value-negative"}">${signed(item.contribution, 4)}</td>
+                </tr>
+            `).join("")}
+            <tr>
+                <td>bias</td>
+                <td>-</td>
+                <td class="${model.biasOutput >= 0 ? "value-positive" : "value-negative"}">${signed(model.biasOutput, 4)}</td>
+            </tr>
+        `;
+    }
+
+    function renderRawWeights() {
+        document.getElementById("rawInputHidden").textContent = model.weightsInputHidden
+            .map((row, i) => row.map((value, j) => `weightsInputHidden[${i}][${j}] = ${value.toFixed(10)}`).join("\n"))
+            .join("\n");
+
+        document.getElementById("rawBiasHidden").textContent = model.biasHidden
+            .map((value, i) => `biasHidden[${i}] = ${value.toFixed(10)}`)
+            .join("\n");
+
+        document.getElementById("rawOutputWeights").textContent = model.weightsHiddenOutput
+            .map((value, i) => `weightsHiddenOutput[${i}][0] = ${value.toFixed(10)}`)
+            .concat([`biasOutput[0] = ${model.biasOutput.toFixed(10)}`])
+            .join("\n");
+    }
+
+    function renderText(state) {
+        document.getElementById("input1Value").textContent = formatNumber(state.x1, 2);
+        document.getElementById("input2Value").textContent = formatNumber(state.x2, 2);
+        document.getElementById("expectedValue").textContent = formatNumber(state.expected, 4);
+        document.getElementById("predictionValue").textContent = formatNumber(state.prediction, 4);
+        document.getElementById("errorValue").textContent = formatNumber(Math.abs(state.expected - state.prediction), 4);
+        document.getElementById("outputBiasValue").textContent = formatNumber(model.biasOutput, 4);
+
+        const firstHidden = state.hidden[0];
+        document.getElementById("hiddenFormula").textContent =
+            `h1 = sigmoid((${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][0], 4)}) + ` +
+            `(${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][0], 4)}) + ` +
+            `${formatNumber(model.biasHidden[0], 4)}) = ${formatNumber(firstHidden.activation, 4)}`;
+
+        const outputPieces = state.hidden
+            .map((neuron, index) => `${formatNumber(neuron.activation, 4)} * ${formatNumber(model.weightsHiddenOutput[index], 4)}`)
+            .join(" + ");
+        document.getElementById("outputFormula").textContent =
+            `y = ${formatNumber(model.biasOutput, 4)} + ${outputPieces} = ${formatNumber(state.prediction, 4)}`;
+
+        const strongestPositive = [...state.outputContributions]
+            .sort((a, b) => b.contribution - a.contribution)[0];
+        const strongestNegative = [...state.outputContributions]
+            .sort((a, b) => a.contribution - b.contribution)[0];
+
+        document.getElementById("modelInsight").textContent =
+            `Ahora mismo la neurona h${strongestPositive.index + 1} es la que mas empuja la salida hacia arriba ` +
+            `(${signed(strongestPositive.contribution, 4)}), mientras que h${strongestNegative.index + 1} es la que mas la baja ` +
+            `(${signed(strongestNegative.contribution, 4)}). Eso muestra que la red no hace una suma directa; ` +
+            `combina varias micro-decisiones y despues las mezcla para construir la respuesta final.`;
+    }
+
+    function update() {
+        const x1 = Number(input1.value);
+        const x2 = Number(input2.value);
+        const state = computeState(x1, x2);
+        renderText(state);
+        drawNetwork(state);
+        renderNeuronCards(state);
+        renderTables(state);
+    }
+
+    input1.addEventListener("input", update);
+    input2.addEventListener("input", update);
+
+    renderRawWeights();
+    update();
+</script>
+</body>
+</html>
