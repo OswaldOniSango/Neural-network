@@ -922,35 +922,41 @@
         </p>
 
         <div class="training-grid">
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="1" role="button" tabindex="0" aria-label="Ver codigo Java de inicializacion aleatoria">
                 <div class="step-number">1</div>
                 <h3>Inicializacion aleatoria</h3>
                 <p>Los pesos arrancan con valores aleatorios entre -1 y 1. Al principio la red no sabe sumar.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="2" role="button" tabindex="0" aria-label="Ver codigo Java del forward pass">
                 <div class="step-number">2</div>
                 <h3>Forward pass</h3>
                 <p>Las entradas pasan por la capa oculta. Cada neurona combina entradas, pesos y bias, y luego aplica sigmoide.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="3" role="button" tabindex="0" aria-label="Ver codigo Java del error de salida">
                 <div class="step-number">3</div>
                 <h3>Error de salida</h3>
                 <p>El error es <code>esperado - predicho</code>. Si la red da menos de lo correcto, varios pesos deben aumentar.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="4" role="button" tabindex="0" aria-label="Ver codigo Java del backpropagation">
                 <div class="step-number">4</div>
                 <h3>Backpropagation</h3>
                 <p>Ese error se reparte hacia atras. Asi cada neurona oculta recibe una senal de cuanto colaboro en el error.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="5" role="button" tabindex="0" aria-label="Ver codigo Java de la actualizacion de pesos">
                 <div class="step-number">5</div>
                 <h3>Actualizacion</h3>
                 <p>El codigo ajusta pesos y biases con la regla: <code>nuevo = viejo + learningRate * correccion</code>.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
-            <article class="training-step">
+            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="6" role="button" tabindex="0" aria-label="Ver codigo Java de la repeticion de epocas">
                 <div class="step-number">6</div>
                 <h3>Repeticion</h3>
                 <p>Esto se repite por 20000 epocas. Poco a poco la red encuentra una combinacion que aproxima la suma.</p>
+                <p class="detail-hint">Click para ver el codigo Java real.</p>
             </article>
         </div>
 
@@ -1172,6 +1178,181 @@
         };
     }
 
+    function buildTrainingStepDetail(stepNumber) {
+        const file = "src/main/java/org/oswaldo/model/NeuralNetwork.java";
+        const setupFile = "src/main/java/org/oswaldo/util/TrainModel.java";
+
+        if (stepNumber === 1) {
+            return {
+                title: "Codigo Java: inicializacion aleatoria",
+                sections: [
+                    {
+                        title: `${file} - initializeWeights()`,
+                        equations: [
+                            "private void initializeWeights() {",
+                            "    for (int i = 0; i < inputSize; i++) {",
+                            "        for (int j = 0; j < hiddenSize; j++) {",
+                            "            weightsInputHidden[i][j] = random.nextDouble() * 2 - 1;",
+                            "        }",
+                            "    }",
+                            "",
+                            "    for (int j = 0; j < hiddenSize; j++) {",
+                            "        biasHidden[j] = random.nextDouble() * 2 - 1;",
+                            "    }",
+                            "",
+                            "    for (int j = 0; j < hiddenSize; j++) {",
+                            "        for (int k = 0; k < outputSize; k++) {",
+                            "            weightsHiddenOutput[j][k] = random.nextDouble() * 2 - 1;",
+                            "        }",
+                            "    }",
+                            "",
+                            "    for (int k = 0; k < outputSize; k++) {",
+                            "        biasOutput[k] = random.nextDouble() * 2 - 1;",
+                            "    }",
+                            "}"
+                        ],
+                        description: "Aca la red arranca con pesos y biases aleatorios entre -1 y 1."
+                    }
+                ]
+            };
+        }
+
+        if (stepNumber === 2) {
+            return {
+                title: "Codigo Java: forward pass",
+                sections: [
+                    {
+                        title: `${file} - train()`,
+                        equations: [
+                            "// FORWARD PASS",
+                            "for (int j = 0; j < hiddenSize; j++) {",
+                            "    double sum = biasHidden[j];",
+                            "    for (int i = 0; i < inputSize; i++) {",
+                            "        sum += inputs[i] * weightsInputHidden[i][j];",
+                            "    }",
+                            "    hidden[j] = sigmoid(sum);",
+                            "}",
+                            "",
+                            "for (int k = 0; k < outputSize; k++) {",
+                            "    double sum = biasOutput[k];",
+                            "    for (int j = 0; j < hiddenSize; j++) {",
+                            "        sum += hidden[j] * weightsHiddenOutput[j][k];",
+                            "    }",
+                            "    outputs[k] = sum; // salida lineal",
+                            "}"
+                        ],
+                        description: "Este bloque calcula primero la capa oculta y despues la salida final."
+                    }
+                ]
+            };
+        }
+
+        if (stepNumber === 3) {
+            return {
+                title: "Codigo Java: error de salida",
+                sections: [
+                    {
+                        title: `${file} - train()`,
+                        equations: [
+                            "// ERROR EN LA SALIDA",
+                            "double[] outputErrors = new double[outputSize];",
+                            "for (int k = 0; k < outputSize; k++) {",
+                            "    outputErrors[k] = expected[k] - outputs[k];",
+                            "    totalError += outputErrors[k] * outputErrors[k];",
+                            "}"
+                        ],
+                        description: "Aca se calcula cuanto se equivoco la salida y se acumula el error total de la epoca."
+                    }
+                ]
+            };
+        }
+
+        if (stepNumber === 4) {
+            return {
+                title: "Codigo Java: backpropagation",
+                sections: [
+                    {
+                        title: `${file} - train()`,
+                        equations: [
+                            "// ERROR EN LA CAPA OCULTA",
+                            "double[] hiddenErrors = new double[hiddenSize];",
+                            "for (int j = 0; j < hiddenSize; j++) {",
+                            "    double error = 0.0;",
+                            "    for (int k = 0; k < outputSize; k++) {",
+                            "        error += outputErrors[k] * weightsHiddenOutput[j][k];",
+                            "    }",
+                            "    hiddenErrors[j] = error * sigmoidDerivative(hidden[j]);",
+                            "}"
+                        ],
+                        description: "Este bloque reparte el error hacia atras y calcula cuanto ajustarse en cada neurona oculta."
+                    }
+                ]
+            };
+        }
+
+        if (stepNumber === 5) {
+            return {
+                title: "Codigo Java: actualizacion de pesos y biases",
+                sections: [
+                    {
+                        title: `${file} - train()`,
+                        equations: [
+                            "// ACTUALIZAR PESOS HIDDEN -> OUTPUT",
+                            "for (int j = 0; j < hiddenSize; j++) {",
+                            "    for (int k = 0; k < outputSize; k++) {",
+                            "        weightsHiddenOutput[j][k] += learningRate * outputErrors[k] * hidden[j];",
+                            "    }",
+                            "}",
+                            "",
+                            "// ACTUALIZAR BIAS OUTPUT",
+                            "for (int k = 0; k < outputSize; k++) {",
+                            "    biasOutput[k] += learningRate * outputErrors[k];",
+                            "}",
+                            "",
+                            "// ACTUALIZAR PESOS INPUT HIDDEN",
+                            "for (int i = 0; i < inputSize; i++) {",
+                            "    for (int j = 0; j < hiddenSize; j++) {",
+                            "        weightsInputHidden[i][j] += learningRate * hiddenErrors[j] * inputs[i];",
+                            "    }",
+                            "}",
+                            "",
+                            "// ACTUALIZAR BIAS HIDDEN",
+                            "for (int j = 0; j < hiddenSize; j++) {",
+                            "    biasHidden[j] += learningRate * hiddenErrors[j];",
+                            "}"
+                        ],
+                        description: "Aca ocurre el aprendizaje real: se mueven pesos y biases usando learningRate."
+                    }
+                ]
+            };
+        }
+
+        return {
+            title: "Codigo Java: repeticion de epocas",
+            sections: [
+                {
+                    title: `${setupFile} + ${file}`,
+                    equations: [
+                        "NeuralNetwork nn = new NeuralNetwork(2, 6, 1);",
+                        "nn.train(trainingInputs, trainingOutputs, 20000, 0.1);",
+                        "",
+                        "for (int epoch = 0; epoch < epochs; epoch++) {",
+                        "    double totalError = 0.0;",
+                        "    for (int sample = 0; sample < trainingInputs.length; sample++) {",
+                        "        ...",
+                        "    }",
+                        "",
+                        "    if (epoch % 1000 == 0) {",
+                        "        System.out.printf(\"Epoch %d - Error total: %.8f%n\", epoch, totalError);",
+                        "    }",
+                        "}"
+                    ],
+                    description: "Este bloque muestra donde se definen las 20000 epocas y como se repite el entrenamiento sobre todas las muestras."
+                }
+            ]
+        };
+    }
+
     function openDetailFromCard(card) {
         if (!currentState) {
             return;
@@ -1184,6 +1365,11 @@
 
         if (card.dataset.detailType === "output-formula") {
             openDetailPanel(buildOutputFormulaDetail(currentState));
+            return;
+        }
+
+        if (card.dataset.detailType === "training-step") {
+            openDetailPanel(buildTrainingStepDetail(Number(card.dataset.trainingStep)));
             return;
         }
 
