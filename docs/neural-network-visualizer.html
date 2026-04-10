@@ -680,7 +680,7 @@
     <section class="hero">
         <div class="hero-grid">
             <div>
-                <div class="eyebrow">Esta web explica la red neuronal escrita en hava</div>
+                <div class="eyebrow">Esta web explica la red neuronal escrita en java</div>
                 <h1>Red neuronal para enseñar a sumar</h1>
                 <p class="lead">
                     Esta pagina usa los mismos nombres que aparecen en la clase
@@ -1095,8 +1095,7 @@
     function renderModelVariables() {
         modelVariables.innerHTML = `
             ${createStepMenu([
-                { id: "model-step-1", label: "Variables base" },
-                { id: "model-step-2", label: "Origen de weightsHiddenOutput[0][0]" }
+                { id: "model-step-1", label: "Variables base" }
             ])}
             ${createStepBlock(
                 "Variables que ya existen antes de llamar a predict()",
@@ -1140,26 +1139,6 @@
                     </div>
                 `,
                 { id: "model-step-1", open: true, kicker: "Abrir para ver las matrices y bias del objeto" }
-            )}
-            ${createStepBlock(
-                "De donde sale weightsHiddenOutput[0][0]",
-                "Esto responde exactamente a tu pelea principal: ese numero no se calcula en el paso 3. Ese numero ya vive dentro de la matriz weightsHiddenOutput.",
-                createEquationCard(
-                    "Lectura directa del codigo",
-                    [
-                        "weightsHiddenOutput se declara en NeuralNetwork como double[][]",
-                        "weightsHiddenOutput tiene forma [6][1] porque hay 6 hidden y 1 output",
-                        "weightsHiddenOutput[0][0] = -1.3026",
-                        "weightsHiddenOutput[1][0] = +2.5336",
-                        "weightsHiddenOutput[2][0] = +1.4389",
-                        "",
-                        "Entonces:",
-                        "el peso desde hidden[0] hacia outputs[0] es weightsHiddenOutput[0][0]",
-                        "el peso desde hidden[1] hacia outputs[0] es weightsHiddenOutput[1][0]"
-                    ],
-                    "La web ya no deberia mostrar ese numero como si apareciera de la nada. Tiene que salir siempre de su matriz real."
-                ),
-                { id: "model-step-2", open: false, kicker: "Abrir solo si queres rastrear un valor puntual" }
             )}
         `;
     }
