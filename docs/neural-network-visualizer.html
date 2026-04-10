@@ -3,754 +3,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Red Neuronal</title>
+    <title>Explicacion de tu red neuronal</title>
     <style>
         :root {
-            --bg: #efe4d3;
-            --bg-deep: #e0cfb7;
-            --panel: rgba(255, 251, 244, 0.8);
-            --panel-strong: #fffdf8;
-            --panel-soft: rgba(255, 248, 240, 0.92);
-            --ink: #17212b;
-            --ink-soft: #31404d;
-            --muted: #667085;
+            --bg: #f5ecdf;
+            --bg-deep: #ead8bf;
+            --paper: rgba(255, 252, 247, 0.92);
+            --paper-strong: #fffdfa;
+            --ink: #1b2430;
+            --ink-soft: #445363;
+            --muted: #6b7280;
+            --line: rgba(27, 36, 48, 0.12);
+            --line-strong: rgba(27, 36, 48, 0.22);
             --accent: #0f766e;
-            --accent-strong: #115e59;
-            --accent-soft: rgba(15, 118, 110, 0.14);
-            --warm: #b45309;
-            --warm-bright: #d97706;
-            --warm-soft: rgba(180, 83, 9, 0.12);
-            --negative: #b42318;
-            --negative-soft: rgba(180, 35, 24, 0.14);
-            --line: rgba(23, 33, 43, 0.1);
-            --line-strong: rgba(23, 33, 43, 0.16);
-            --shadow: 0 28px 80px rgba(23, 33, 43, 0.12);
-            --shadow-soft: 0 16px 36px rgba(23, 33, 43, 0.08);
+            --accent-soft: rgba(15, 118, 110, 0.12);
+            --warm: #c97b1d;
+            --warm-soft: rgba(201, 123, 29, 0.12);
+            --neg: #b42318;
+            --neg-soft: rgba(180, 35, 24, 0.12);
+            --shadow: 0 22px 60px rgba(27, 36, 48, 0.1);
+            --shadow-soft: 0 12px 28px rgba(27, 36, 48, 0.08);
             --radius-xl: 30px;
             --radius-lg: 22px;
             --radius-md: 16px;
-        }
-
-        html {
-            scroll-behavior: smooth;
         }
 
         * {
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
             min-height: 100vh;
-            position: relative;
-            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
             color: var(--ink);
+            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(15, 118, 110, 0.22), transparent 30%),
-                radial-gradient(circle at 85% 10%, rgba(217, 119, 6, 0.18), transparent 24%),
-                radial-gradient(circle at 50% 100%, rgba(15, 118, 110, 0.08), transparent 35%),
-                linear-gradient(180deg, #f6efe4 0%, var(--bg) 52%, var(--bg-deep) 100%);
-        }
-
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            border-radius: 999px;
-            pointer-events: none;
-            filter: blur(18px);
-            z-index: 0;
-        }
-
-        body::before {
-            top: 72px;
-            left: -70px;
-            width: 240px;
-            height: 240px;
-            background: radial-gradient(circle, rgba(15, 118, 110, 0.14), transparent 68%);
-        }
-
-        body::after {
-            right: -110px;
-            bottom: 60px;
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, rgba(217, 119, 6, 0.14), transparent 70%);
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 26%),
+                radial-gradient(circle at 90% 8%, rgba(201, 123, 29, 0.16), transparent 22%),
+                linear-gradient(180deg, #f8f1e7 0%, var(--bg) 55%, var(--bg-deep) 100%);
         }
 
         .page {
-            width: min(1180px, calc(100% - 32px));
-            margin: 28px auto 72px;
-            position: relative;
-            z-index: 1;
+            width: min(1220px, calc(100% - 28px));
+            margin: 24px auto 60px;
         }
 
         .hero,
-        .panel {
+        .section {
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 249, 242, 0.9)),
+                var(--paper);
+            border: 1px solid rgba(255, 255, 255, 0.74);
+            box-shadow: var(--shadow);
+            border-radius: 34px;
+            padding: 30px;
             position: relative;
             overflow: hidden;
-            background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 248, 240, 0.82)),
-                var(--panel);
-            border: 1px solid rgba(255, 255, 255, 0.68);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(12px);
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+
+        .section,
+        .step-block {
+            scroll-margin-top: 20px;
         }
 
         .hero::before,
-        .panel::before {
+        .section::before {
             content: "";
             position: absolute;
-            inset: 0 0 auto 0;
+            inset: 0 auto auto 0;
+            width: 100%;
             height: 110px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), transparent);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), transparent);
             pointer-events: none;
         }
 
-        .hero {
-            border-radius: 40px;
-            padding: 38px;
-            display: grid;
-            gap: 28px;
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 0.9fr;
-            gap: 28px;
-        }
-
-        h1, h2, h3, p {
+        h1,
+        h2,
+        h3,
+        h4,
+        p {
             margin: 0;
         }
 
         h1 {
-            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-            font-size: clamp(2.7rem, 5vw, 5.2rem);
+            font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+            font-size: clamp(2.8rem, 5vw, 5rem);
             line-height: 0.92;
-            letter-spacing: -0.04em;
+            letter-spacing: -0.05em;
             max-width: 8.6ch;
-            text-wrap: balance;
         }
 
         h2 {
-            font-size: 1.62rem;
+            font-size: 1.7rem;
             line-height: 1.05;
-            margin-bottom: 18px;
             letter-spacing: -0.03em;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .panel > h2::before {
-            content: "";
-            width: 10px;
-            height: 34px;
-            border-radius: 999px;
-            background: linear-gradient(180deg, var(--accent), rgba(15, 118, 110, 0.22));
-            box-shadow: 0 0 0 6px rgba(15, 118, 110, 0.08);
+            margin-bottom: 14px;
         }
 
         h3 {
-            font-size: 1.04rem;
-            margin-bottom: 10px;
+            font-size: 1.15rem;
             letter-spacing: -0.02em;
         }
 
-        .lede {
+        h4 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .lead {
             color: var(--ink-soft);
             font-size: 1.08rem;
             line-height: 1.72;
-            max-width: 62ch;
-            text-wrap: pretty;
+            max-width: 72ch;
         }
 
-        .chip-row,
-        .summary-grid,
+        .hero-grid,
         .controls-grid,
-        .metrics-grid,
-        .training-grid,
-        .legend,
-        .weight-columns,
+        .stats-grid,
+        .card-grid,
+        .step-grid,
         .raw-grid {
             display: grid;
             gap: 16px;
         }
 
-        .small-label {
-            display: inline-block;
-            margin-bottom: 12px;
-            color: var(--accent-strong);
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            font-size: 0.76rem;
-            font-weight: 700;
+        .hero-grid {
+            grid-template-columns: 1.25fr 0.95fr;
+            align-items: start;
         }
 
-        .chip-row {
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
-        }
-
-        .chip {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(253, 247, 239, 0.88));
-            border: 1px solid rgba(23, 33, 43, 0.08);
-            border-radius: 22px;
-            padding: 16px 18px;
-            font-size: 0.95rem;
-            box-shadow: 0 10px 22px rgba(23, 33, 43, 0.06);
-        }
-
-        .chip strong {
-            display: block;
-            font-size: 1.03rem;
-            margin-bottom: 4px;
-        }
-
-        .summary-grid {
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-        }
-
-        .summary-card,
-        .metric,
-        .training-step,
-        .neuron-card,
-        .weight-card,
-        .raw-card {
+        .card,
+        .stat,
+        .matrix-card,
+        .note-card {
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.9)),
-                var(--panel-strong);
-            border: 1px solid rgba(23, 33, 43, 0.08);
+                linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 249, 242, 0.92)),
+                var(--paper-strong);
+            border: 1px solid var(--line);
             border-radius: var(--radius-lg);
-            padding: 20px;
             box-shadow: var(--shadow-soft);
         }
 
-        .summary-card span,
-        .metric-label,
-        .small-label,
-        .explain,
-        .weight-meta,
-        .raw-card pre {
-            color: var(--muted);
+        .summary-card {
+            padding: 18px;
+            min-height: 110px;
+            display: grid;
+            align-content: space-between;
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 36%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 249, 242, 0.92));
         }
 
-        .summary-card strong,
-        .metric-value,
-        .formula,
-        .big-number {
-            display: block;
-            margin-top: 8px;
+        .summary-card span {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .summary-card strong {
             font-size: 1.55rem;
             line-height: 1;
         }
 
-        .summary-card {
-            min-height: 120px;
-            display: grid;
-            align-content: space-between;
-            background:
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 42%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.92));
-        }
-
-        .summary-card strong {
-            font-size: 1.8rem;
-            letter-spacing: -0.04em;
-        }
-
-        .panel {
-            border-radius: var(--radius-xl);
-            margin-top: 28px;
-            padding: 32px;
+        .card-grid {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
         }
 
         .controls-grid {
-            grid-template-columns: minmax(280px, 360px) 1fr;
+            grid-template-columns: 1.1fr 0.9fr;
             align-items: start;
         }
 
-        .control-card {
-            background:
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 35%),
-                linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.82));
-            border: 1px solid rgba(15, 118, 110, 0.16);
-            border-radius: var(--radius-lg);
-            padding: 22px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        .jump-grid,
+        .step-menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .jump-grid {
+            margin-top: 16px;
+        }
+
+        .jump-link,
+        .step-menu a {
+            display: inline-flex;
+            align-items: center;
+            padding: 11px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--ink-soft);
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .jump-link:hover,
+        .step-menu a:hover {
+            transform: translateY(-1px);
+            border-color: rgba(15, 118, 110, 0.25);
+            background: rgba(15, 118, 110, 0.08);
+        }
+
+        .controls-card,
+        .stats-card,
+        .panel-card {
+            padding: 20px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+
+        .stat {
+            padding: 18px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
         }
 
         .slider-block + .slider-block {
-            margin-top: 22px;
+            margin-top: 18px;
         }
 
         label {
             display: flex;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            margin-bottom: 10px;
         }
 
         input[type="range"] {
             width: 100%;
-            accent-color: var(--accent);
-        }
-
-        input[type="range"]::-webkit-slider-runnable-track {
-            height: 10px;
+            appearance: none;
+            height: 12px;
             border-radius: 999px;
-            background: linear-gradient(90deg, rgba(15, 118, 110, 0.18), rgba(23, 33, 43, 0.08));
+            background: linear-gradient(90deg, rgba(15, 118, 110, 0.2), rgba(201, 123, 29, 0.2));
+            outline: none;
         }
 
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
             appearance: none;
             width: 22px;
             height: 22px;
-            margin-top: -6px;
-            border-radius: 50%;
-            background: linear-gradient(180deg, var(--accent), #14b8a6);
-            border: 2px solid #fff;
-            box-shadow: 0 6px 16px rgba(15, 118, 110, 0.28);
-        }
-
-        input[type="range"]::-moz-range-track {
-            height: 10px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, rgba(15, 118, 110, 0.18), rgba(23, 33, 43, 0.08));
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 22px;
-            height: 22px;
             border-radius: 50%;
             border: 2px solid #fff;
-            background: linear-gradient(180deg, var(--accent), #14b8a6);
-            box-shadow: 0 6px 16px rgba(15, 118, 110, 0.28);
-        }
-
-        .slider-hint,
-        .explainer-list li,
-        .formula-note,
-        .training-step p,
-        .raw-card p {
-            color: var(--muted);
-            line-height: 1.58;
-        }
-
-        .metrics-grid {
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        }
-
-        .metric {
-            min-height: 100%;
-            display: grid;
-            align-content: start;
-            gap: 8px;
-            background:
-                radial-gradient(circle at top right, rgba(217, 119, 6, 0.08), transparent 35%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.92));
-        }
-
-        .metric-value {
-            font-size: 1.9rem;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.03em;
-        }
-
-        .network-wrapper {
-            overflow-x: auto;
-            border-radius: var(--radius-lg);
-            background:
-                radial-gradient(circle at top center, rgba(15, 118, 110, 0.08), transparent 36%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 241, 0.98));
-            border: 1px solid rgba(23, 33, 43, 0.08);
-            padding: 22px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        }
-
-        svg {
-            width: 100%;
-            min-width: 780px;
-            height: auto;
-            display: block;
-        }
-
-        .legend {
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            margin-top: 16px;
-        }
-
-        .legend-item {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            color: var(--ink-soft);
-            font-size: 0.92rem;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.54);
-            border: 1px solid rgba(23, 33, 43, 0.06);
-            border-radius: 18px;
-        }
-
-        .legend-swatch {
-            width: 42px;
-            height: 10px;
-            border-radius: 999px;
-        }
-
-        .formula-block {
-            margin-top: 24px;
-            display: grid;
-            gap: 18px;
-        }
-
-        .formula-card {
-            padding: 22px;
-            border-radius: var(--radius-lg);
-            background:
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 34%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.92));
-            border: 1px solid rgba(23, 33, 43, 0.08);
-        }
-
-        .formula {
-            font-size: 1.12rem;
-            margin-bottom: 8px;
-            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-            line-height: 1.6;
-            word-break: break-word;
-        }
-
-        .detail-card {
+            background: var(--accent);
+            box-shadow: 0 6px 14px rgba(15, 118, 110, 0.28);
             cursor: pointer;
-            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
         }
 
-        .detail-card:hover,
-        .detail-card:focus-visible {
-            transform: translateY(-3px);
-            border-color: rgba(15, 118, 110, 0.3);
-            box-shadow: 0 22px 42px rgba(23, 33, 43, 0.12);
-            outline: none;
+        .hint {
+            margin-top: 16px;
+            color: var(--muted);
+            line-height: 1.65;
         }
 
-        .detail-hint {
-            margin-top: 14px;
-            color: var(--accent-strong);
-            font-size: 0.86rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            font-weight: 700;
-        }
-
-        .neurons-grid {
-            margin-top: 22px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 18px;
-        }
-
-        .neuron-card {
-            position: relative;
-            overflow: hidden;
-            background:
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 30%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.94));
-        }
-
-        .neuron-card::after {
-            content: "";
-            position: absolute;
-            inset: 0 auto auto 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, rgba(15, 118, 110, 0.85), rgba(20, 184, 166, 0.28));
-        }
-
-        .neuron-top {
+        .selector {
             display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: start;
-            margin-bottom: 12px;
-        }
-
-        .activation-bar {
-            height: 12px;
-            border-radius: 999px;
-            background: rgba(23, 33, 43, 0.08);
-            overflow: hidden;
-            margin: 14px 0 16px;
-        }
-
-        .activation-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #0f766e, #14b8a6);
-            box-shadow: 0 0 24px rgba(15, 118, 110, 0.28);
-        }
-
-        .neuron-stats {
-            display: grid;
-            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-            font-size: 0.9rem;
+            flex-wrap: wrap;
             gap: 10px;
+            margin-top: 14px;
         }
 
-        .value-positive {
-            color: var(--accent);
+        .selector button {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--ink-soft);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-        .value-negative {
-            color: var(--negative);
+        .selector button.is-active {
+            background: var(--accent);
+            color: #fff;
+            border-color: transparent;
         }
 
-        .training-grid {
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        .section-copy {
+            color: var(--ink-soft);
+            line-height: 1.7;
+            max-width: 74ch;
+            margin-bottom: 18px;
+        }
+
+        .step-menu {
+            margin-bottom: 14px;
+        }
+
+        .step-block + .step-block {
             margin-top: 18px;
         }
 
-        .training-step {
-            position: relative;
-            padding-top: 48px;
-            background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.9));
+        .step-block {
+            padding: 0;
+            overflow: hidden;
         }
 
-        .step-number {
-            position: absolute;
-            top: 16px;
-            left: 18px;
-            width: 26px;
-            height: 26px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            background: var(--accent-soft);
-            color: var(--accent);
-            font-weight: 700;
+        .step-block[open] {
+            border-color: rgba(15, 118, 110, 0.18);
         }
 
-        .weight-columns,
-        .raw-grid {
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            margin-top: 20px;
-        }
-
-        .weight-table,
-        .contribution-list {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.93rem;
-            table-layout: fixed;
-        }
-
-        .weight-table th,
-        .weight-table td,
-        .contribution-list td {
-            border-bottom: 1px solid rgba(31, 41, 51, 0.08);
-            padding: 10px 10px 10px 0;
-            text-align: left;
-            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-            vertical-align: top;
-        }
-
-        .weight-table th {
-            color: var(--ink-soft);
-            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
-            font-weight: 700;
-        }
-
-        .weight-table th:first-child,
-        .weight-table td:first-child,
-        .contribution-list td:first-child {
-            width: 78px;
-            white-space: nowrap;
-            font-family: "Avenir Next", "Trebuchet MS", sans-serif;
-            font-weight: 700;
-        }
-
-        .weight-table td:not(:first-child),
-        .contribution-list td:not(:first-child) {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-        }
-
-        .weight-card,
-        .raw-card {
-            overflow-x: auto;
-        }
-
-        .raw-card pre {
-            margin: 14px 0 0;
-            font-size: 0.88rem;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-        }
-
-        .callout {
-            margin-top: 22px;
+        .step-summary {
+            list-style: none;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 18px;
             padding: 22px;
-            border-radius: var(--radius-lg);
-            background:
-                radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 32%),
-                linear-gradient(90deg, rgba(180, 83, 9, 0.12), rgba(255, 255, 255, 0.78));
-            border: 1px solid rgba(180, 83, 9, 0.18);
-            box-shadow: var(--shadow-soft);
+            cursor: pointer;
         }
 
-        .callout strong {
-            display: block;
+        .step-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .step-toggle {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+            position: relative;
+            margin-top: 2px;
+        }
+
+        .step-toggle::before,
+        .step-toggle::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 14px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 999px;
+            transform: translate(-50%, -50%);
+        }
+
+        .step-toggle::after {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+
+        .step-block[open] .step-toggle::after {
+            opacity: 0;
+        }
+
+        .step-head {
+            flex: 1;
+        }
+
+        .step-kicker {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.72rem;
+            font-weight: 700;
             margin-bottom: 8px;
         }
 
-        .detail-panel {
-            margin-top: 22px;
-            background:
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 36%),
-                linear-gradient(180deg, #fffaf2 0%, #f7efe3 100%);
-            border-radius: 28px;
-            border: 1px solid rgba(31, 41, 51, 0.12);
-            box-shadow: 0 20px 50px rgba(20, 24, 31, 0.12);
-            padding: 22px;
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        .detail-panel-top {
+        .step-copy {
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .step-content {
+            padding: 0 22px 22px;
+        }
+
+        .math-row {
             display: flex;
-            justify-content: space-between;
-            gap: 16px;
+            flex-wrap: wrap;
+            gap: 14px;
             align-items: center;
         }
 
-        .detail-panel-title {
-            margin: 0;
-            font-size: 1.2rem;
+        .math-op {
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
         }
 
-        .detail-panel-close {
-            border: 0;
-            border-radius: 999px;
-            background: rgba(15, 118, 110, 0.1);
-            color: var(--ink);
-            padding: 10px 14px;
-            cursor: pointer;
+        .matrix-card {
+            padding: 16px;
+            min-width: 0;
+            flex: 1 1 260px;
+        }
+
+        .matrix-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .matrix-meta {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .matrix-wrap {
+            overflow-x: auto;
+        }
+
+        table.matrix {
+            width: 100%;
+            min-width: max-content;
+            border-collapse: separate;
+            border-spacing: 8px;
+        }
+
+        table.matrix th,
+        table.matrix td {
+            padding: 0;
+            text-align: center;
+        }
+
+        .axis {
+            min-width: 78px;
+            color: var(--ink-soft);
+            font-size: 0.76rem;
             font-weight: 700;
         }
 
-        .detail-panel-close:hover,
-        .detail-panel-close:focus-visible {
-            background: rgba(15, 118, 110, 0.18);
-            outline: none;
-        }
-
-        .detail-panel-body {
-            margin: 18px 0 0;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.68);
-            border: 1px solid rgba(31, 41, 51, 0.08);
-            border-radius: 18px;
+        .cell {
+            min-width: 92px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
             font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-            font-size: 0.98rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .cell.positive {
+            color: var(--accent);
+            background: rgba(15, 118, 110, 0.14);
+        }
+
+        .cell.negative {
+            color: var(--neg);
+            background: rgba(180, 35, 24, 0.12);
+        }
+
+        .cell.highlight {
+            border-color: rgba(15, 118, 110, 0.36);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.44),
+                0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .equation-card,
+        .note-card {
+            padding: 18px;
+        }
+
+        .equation-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .equation-lines {
+            display: grid;
+            gap: 6px;
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            font-size: 0.96rem;
             line-height: 1.6;
-            white-space: pre-wrap;
+        }
+
+        .equation-note {
+            margin-top: 12px;
+            color: var(--muted);
+            line-height: 1.62;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .callout {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top right, rgba(201, 123, 29, 0.12), transparent 36%),
+                rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--line);
+            color: var(--ink-soft);
+            line-height: 1.65;
+        }
+
+        .raw-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .raw-card {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .raw-block[open] {
+            border-color: rgba(15, 118, 110, 0.18);
+        }
+
+        .raw-card-head {
+            padding: 18px 18px 12px;
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 34%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 249, 242, 0.92));
+            border-bottom: 1px solid var(--line);
+        }
+
+        .raw-summary {
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: start;
+            cursor: pointer;
+        }
+
+        .raw-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .raw-card-head .section-copy {
+            margin: 8px 0 0;
+            max-width: none;
+        }
+
+        .raw-meta {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.08);
+            color: var(--accent);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .raw-list {
+            display: grid;
+            gap: 10px;
+            padding: 16px;
+        }
+
+        .raw-card-body {
+            padding: 16px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .raw-matrix-slot {
+            display: grid;
+            gap: 12px;
+        }
+
+        .raw-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .raw-key,
+        .raw-val,
+        .raw-empty {
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            font-size: 0.92rem;
+        }
+
+        .raw-key {
+            color: var(--ink-soft);
+            line-height: 1.5;
             word-break: break-word;
-            color: var(--ink);
         }
 
-        code {
-            padding: 0.18em 0.42em;
-            border-radius: 8px;
-            background: rgba(23, 33, 43, 0.06);
-            font-size: 0.94em;
+        .raw-val {
+            font-weight: 700;
+            white-space: nowrap;
         }
 
-        ul {
-            margin: 14px 0 0;
-            padding-left: 20px;
+        .raw-empty {
+            padding: 14px;
+            color: var(--muted);
+            border: 1px dashed var(--line-strong);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.6);
         }
 
-        li + li {
-            margin-top: 8px;
+        .positive-text {
+            color: var(--accent);
         }
 
-        ::selection {
-            background: rgba(15, 118, 110, 0.18);
+        .negative-text {
+            color: var(--neg);
         }
 
-        @media (max-width: 920px) {
+        @media (max-width: 940px) {
             .hero-grid,
             .controls-grid {
                 grid-template-columns: 1fr;
             }
-
-            .page {
-                width: min(100% - 20px, 1180px);
-                margin-top: 20px;
-            }
-
-            .hero,
-            .panel {
-                padding: 24px;
-            }
-
-            h1 {
-                max-width: 10ch;
-            }
         }
 
         @media (max-width: 640px) {
-            .hero {
-                padding: 24px;
+            .page {
+                width: min(100% - 16px, 1220px);
+                margin-top: 16px;
             }
 
-            .panel {
-                padding: 24px 20px;
+            .hero,
+            .section {
+                padding: 22px 18px;
+                border-radius: 26px;
             }
 
             h1 {
-                font-size: clamp(2.4rem, 14vw, 3.5rem);
-            }
-
-            h2 {
-                font-size: 1.38rem;
-                align-items: start;
-            }
-
-            .chip {
-                border-radius: 18px;
-            }
-
-            .weight-table,
-            .contribution-list {
-                font-size: 0.82rem;
-            }
-
-            .weight-table th:first-child,
-            .weight-table td:first-child,
-            .contribution-list td:first-child {
-                width: 64px;
-            }
-
-            .detail-panel-top,
-            .neuron-top {
-                flex-direction: column;
-                align-items: start;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            html {
-                scroll-behavior: auto;
-            }
-
-            .detail-card {
-                transition: none;
+                font-size: clamp(2.3rem, 14vw, 3.8rem);
             }
         }
     </style>
@@ -760,273 +680,227 @@
     <section class="hero">
         <div class="hero-grid">
             <div>
-                <p class="small-label">Modelo entrenado para aproximar una suma</p>
-                <h1>Entendiendo nuestra red neuronal</h1>
-                <p class="lede">
-                    Esta pagina traduce tus pesos y biases a algo visual. El modelo toma dos entradas,
-                    las pasa por 6 neuronas ocultas con funcion sigmoide y produce una salida lineal.
-                    En este caso, aprendio a aproximar <strong>y = x1 + x2</strong>.
+                <div class="eyebrow">Esta web explica tu codigo real</div>
+                <h1>Tu red neuronal, sin inventar nombres</h1>
+                <p class="lead">
+                    Esta pagina usa los mismos nombres que aparecen en tu clase
+                    <code>NeuralNetwork</code>: <code>weightsInputHidden</code>,
+                    <code>biasHidden</code>, <code>weightsHiddenOutput</code>,
+                    <code>biasOutput</code>, <code>hidden</code>, <code>outputs</code>,
+                    <code>outputErrors</code> y <code>hiddenErrors</code>.
                 </p>
             </div>
-            <div class="summary-grid">
-                <div class="summary-card">
+            <div class="card-grid">
+                <div class="summary-card card">
                     <span>Arquitectura</span>
-                    <strong>2 -> 6 -> 1</strong>
+                    <strong>2 x 6 x 1</strong>
                 </div>
-                <div class="summary-card">
-                    <span>Activacion oculta</span>
-                    <strong>Sigmoid</strong>
+                <div class="summary-card card">
+                    <span>Metodo de prueba</span>
+                    <strong>predict()</strong>
                 </div>
-                <div class="summary-card">
-                    <span>Salida</span>
-                    <strong>Lineal</strong>
+                <div class="summary-card card">
+                    <span>Metodo de entrenamiento</span>
+                    <strong>train()</strong>
                 </div>
-                <div class="summary-card">
-                    <span>Objetivo</span>
-                    <strong>Sumar</strong>
-                </div>
-                <div class="summary-card">
+                <div class="summary-card card">
                     <span>Learning rate</span>
                     <strong>0.1</strong>
                 </div>
-                <div class="summary-card">
-                    <span>Epocas</span>
-                    <strong>20000</strong>
-                </div>
             </div>
-        </div>
-
-        <div class="chip-row">
-            <div class="chip"><strong>Peso</strong>Cuanto influye una neurona sobre otra.</div>
-            <div class="chip"><strong>Bias</strong>Desplaza la activacion aunque la entrada sea 0.</div>
-            <div class="chip"><strong>Forward pass</strong>Calculo desde las entradas hasta la salida.</div>
-            <div class="chip"><strong>Backpropagation</strong>Ajuste de pesos usando el error.</div>
         </div>
     </section>
 
-    <section class="panel">
-        <h2>1. Proba la red con tus propias entradas</h2>
+    <section class="section">
+        <h2>Mapa rapido</h2>
+        <p class="section-copy">
+            Usa este menu para saltar al bloque que queres estudiar y deja el resto minimizado.
+        </p>
+        <div class="jump-grid">
+            <a class="jump-link" href="#section-model">1. Variables del modelo</a>
+            <a class="jump-link" href="#section-predict">2. Cuando la probas</a>
+            <a class="jump-link" href="#section-train">3. Cuando entrena</a>
+            <a class="jump-link" href="#section-raw">4. Valores brutos</a>
+        </div>
+    </section>
+
+    <section class="section" id="section-controls">
+        <h2>Entradas de prueba</h2>
+        <p class="section-copy">
+            Move los sliders. Toda la pagina se recalcula con esas entradas y muestra
+            exactamente como se usan dentro de <code>predict()</code> y como se veria
+            una iteracion de <code>train()</code>.
+        </p>
         <div class="controls-grid">
-            <div class="control-card">
+            <div class="controls-card card">
                 <div class="slider-block">
                     <label for="input1">
-                        <span>Entrada x1</span>
+                        <span>inputs[0] / x1</span>
                         <span id="input1Value">0.30</span>
                     </label>
                     <input id="input1" type="range" min="0" max="1" step="0.01" value="0.30">
                 </div>
-
                 <div class="slider-block">
                     <label for="input2">
-                        <span>Entrada x2</span>
+                        <span>inputs[1] / x2</span>
                         <span id="input2Value">0.70</span>
                     </label>
                     <input id="input2" type="range" min="0" max="1" step="0.01" value="0.70">
                 </div>
-
-                <p class="slider-hint">
-                    Cada vez que moves un slider, la pagina recalcula todas las neuronas ocultas y la salida final
-                    usando exactamente los pesos que pegaste.
+                <p class="hint">
+                    La neurona seleccionada se resalta en las matrices para que puedas seguir
+                    una sola columna o una sola fila sin perderte.
                 </p>
+                <div class="selector" id="hiddenSelector"></div>
             </div>
-
-            <div class="metrics-grid">
-                <div class="metric">
-                    <div class="metric-label">Suma esperada</div>
-                    <div class="metric-value" id="expectedValue">1.00</div>
+            <div class="stats-card card">
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">expected[0]</div>
+                        <div class="stat-value" id="expectedValue">1.0000</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">outputs[0]</div>
+                        <div class="stat-value" id="outputValue">0.0000</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">outputErrors[0]</div>
+                        <div class="stat-value" id="outputErrorValue">0.0000</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">biasOutput[0]</div>
+                        <div class="stat-value" id="biasOutputValue">0.0000</div>
+                    </div>
                 </div>
-                <div class="metric">
-                    <div class="metric-label">Prediccion del modelo</div>
-                    <div class="metric-value" id="predictionValue">0.99</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-label">Error absoluto</div>
-                    <div class="metric-value" id="errorValue">0.01</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-label">Bias de salida</div>
-                    <div class="metric-value" id="outputBiasValue">-0.45</div>
-                </div>
             </div>
-        </div>
-
-        <div class="network-wrapper" style="margin-top: 22px;">
-            <svg id="networkSvg" viewBox="0 0 960 450" aria-label="Diagrama de la red neuronal"></svg>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item"><span class="legend-swatch" style="background:#0f766e;"></span> Peso positivo: empuja la activacion hacia arriba.</div>
-            <div class="legend-item"><span class="legend-swatch" style="background:#b42318;"></span> Peso negativo: empuja la activacion hacia abajo.</div>
-            <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(90deg, rgba(31,41,51,0.16), rgba(31,41,51,0.85));"></span> Mas grosor y opacidad = mas influencia.</div>
-        </div>
-
-        <div class="formula-block">
-            <div class="formula-card detail-card" data-detail-type="hidden-formula" role="button" tabindex="0" aria-label="Ver detalle de la formula de la neurona oculta">
-                <h3>Formula real de cada neurona oculta</h3>
-                <p class="formula" id="hiddenFormulaSummary"></p>
-                <p class="formula-note">Click para ver el desarrollo de <code>z_h1</code>, <code>a_h1</code> y el bias.</p>
-            </div>
-
-            <div class="formula-card detail-card" data-detail-type="output-formula" role="button" tabindex="0" aria-label="Ver detalle de la formula de salida">
-                <h3>Formula real de la salida</h3>
-                <p class="formula" id="outputFormulaSummary"></p>
-                <p class="formula-note">Click para ver <code>b_out</code>, cada aporte <code>a_hj * w_hj-&gt;y</code> y el resultado final.</p>
-            </div>
-        </div>
-
-        <div class="neurons-grid" id="neuronsGrid"></div>
-
-        <div class="detail-panel" id="detailPanel" hidden>
-            <div class="detail-panel-top">
-                <h3 class="detail-panel-title" id="detailPanelTitle">Detalle</h3>
-                <button class="detail-panel-close" id="detailPanelClose" type="button">Cerrar</button>
-            </div>
-            <pre class="detail-panel-body" id="detailPanelBody"></pre>
         </div>
     </section>
 
-    <section class="panel">
-        <h2>2. Que significan tus pesos y biases</h2>
-        <div class="weight-columns">
-            <div class="weight-card">
-                <h3>Pesos entrada -> capa oculta</h3>
-                <p class="weight-meta">Cada columna representa una neurona oculta. Cada fila te dice como la entrada x1 o x2 la empuja.</p>
-                <table class="weight-table" id="inputHiddenTable"></table>
-            </div>
-
-            <div class="weight-card">
-                <h3>Pesos capa oculta -> salida</h3>
-                <p class="weight-meta">Estos pesos dicen que neuronas ocultas ayudan mas a construir la respuesta final.</p>
-                <table class="weight-table" id="hiddenOutputTable"></table>
-            </div>
-
-            <div class="weight-card">
-                <h3>Contribucion actual a la salida</h3>
-                <p class="weight-meta">Con los sliders actuales, esto es lo que realmente esta aportando cada neurona oculta.</p>
-                <table class="contribution-list" id="contributionTable"></table>
-            </div>
-        </div>
-
-        <div class="callout">
-            <strong>Lectura rapida de tu modelo</strong>
-            <p id="modelInsight" class="slider-hint"></p>
-        </div>
-    </section>
-
-    <section class="panel">
-        <h2>3. Como fue el entrenamiento</h2>
-        <p class="lede" style="max-width: 72ch;">
-            El codigo Java entrena la red con ejemplos como <code>[0.3, 0.4] -> 0.7</code>.
-            En cada epoca, la red hace una prediccion, calcula cuanto se equivoco y mueve un poco sus pesos
-            para acercarse al resultado correcto.
+    <section class="section" id="section-model">
+        <h2>1. Variables del modelo</h2>
+        <p class="section-copy">
+            Estas son las variables que tu objeto ya tiene cargadas. No se calculan en
+            <code>predict()</code>; <code>predict()</code> las usa. Durante
+            <code>train()</code>, estas mismas variables se actualizan.
         </p>
-
-        <div class="training-grid">
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="1" role="button" tabindex="0" aria-label="Ver codigo Java de inicializacion aleatoria">
-                <div class="step-number">1</div>
-                <h3>Inicializacion aleatoria</h3>
-                <p>Los pesos arrancan con valores aleatorios entre -1 y 1. Al principio la red no sabe sumar.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="2" role="button" tabindex="0" aria-label="Ver codigo Java del forward pass">
-                <div class="step-number">2</div>
-                <h3>Forward pass</h3>
-                <p>Las entradas pasan por la capa oculta. Cada neurona combina entradas, pesos y bias, y luego aplica sigmoide.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="3" role="button" tabindex="0" aria-label="Ver codigo Java del error de salida">
-                <div class="step-number">3</div>
-                <h3>Error de salida</h3>
-                <p>El error es <code>esperado - predicho</code>. Si la red da menos de lo correcto, varios pesos deben aumentar.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="4" role="button" tabindex="0" aria-label="Ver codigo Java del backpropagation">
-                <div class="step-number">4</div>
-                <h3>Backpropagation</h3>
-                <p>Ese error se reparte hacia atras. Asi cada neurona oculta recibe una senal de cuanto colaboro en el error.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="5" role="button" tabindex="0" aria-label="Ver codigo Java de la actualizacion de pesos">
-                <div class="step-number">5</div>
-                <h3>Actualizacion</h3>
-                <p>El codigo ajusta pesos y biases con la regla: <code>nuevo = viejo + learningRate * correccion</code>.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-            <article class="training-step detail-card" data-detail-type="training-step" data-training-step="6" role="button" tabindex="0" aria-label="Ver codigo Java de la repeticion de epocas">
-                <div class="step-number">6</div>
-                <h3>Repeticion</h3>
-                <p>Esto se repite por 20000 epocas. Poco a poco la red encuentra una combinacion que aproxima la suma.</p>
-                <p class="detail-hint">Click para ver el codigo Java real.</p>
-            </article>
-        </div>
-
-        <div class="formula-block">
-            <div class="formula-card">
-                <h3>Las formulas del entrenamiento en tu codigo</h3>
-                <p class="formula">outputError = esperado - salida</p>
-                <p class="formula">hiddenError[j] = (outputError * weightHiddenOutput[j]) * hidden[j] * (1 - hidden[j])</p>
-                <p class="formula">weightHiddenOutput[j] += learningRate * outputError * hidden[j]</p>
-                <p class="formula">weightInputHidden[i][j] += learningRate * hiddenError[j] * input[i]</p>
-                <p class="formula-note">
-                    Eso es justamente backpropagation con descenso por gradiente en una red chica de regresion.
-                </p>
-            </div>
-        </div>
-
-        <div class="callout">
-            <strong>Ojo con el alcance del entrenamiento</strong>
-            <p class="slider-hint">
-                Esta red fue entrenada con solo 12 ejemplos, todos en el rango 0.0 a 1.0.
-                Dentro de ese rango suele aproximar bien la suma. Fuera de ese rango no hay garantia:
-                la red no "entiende" matematicamente la suma, solo aprendio un patron numerico a partir de esos datos.
-            </p>
-        </div>
+        <div id="modelVariables" class="stack"></div>
     </section>
 
-    <section class="panel">
-        <h2>4. Tus pesos en bruto</h2>
+    <section class="section" id="section-predict">
+        <h2>2. Cuando la probas: predict()</h2>
+        <p class="section-copy">
+            Esta parte explica el camino normal de prueba. Aca no se aprende nada:
+            solo se toman <code>inputs</code>, se calcula <code>hidden</code> y al final
+            se calcula <code>outputs[0]</code>.
+        </p>
+        <div id="predictSection" class="stack"></div>
+    </section>
+
+    <section class="section" id="section-train">
+        <h2>3. Cuando entrena: train()</h2>
+        <p class="section-copy">
+            Esta parte ya no resume el entrenamiento por formulas sueltas. Sigue el mismo
+            orden del metodo <code>train(...)</code>: toma un sample, crea
+            <code>inputs</code>, <code>expected</code>, <code>hidden</code>,
+            <code>outputs</code>, hace forward pass, calcula errores y recien despues
+            actualiza pesos y bias.
+        </p>
+        <div id="trainSection" class="stack"></div>
+    </section>
+
+    <section class="section" id="section-raw">
+        <h2>4. Valores brutos</h2>
+        <p class="section-copy">
+            Esta vista muestra los valores exactos guardados en el modelo, pero con formato
+            de lectura mas limpio. No hay formulas aca: solo el estado real de tus variables.
+        </p>
         <div class="raw-grid">
-            <div class="raw-card">
-                <h3>weightsInputHidden</h3>
-                <p>Dos filas porque hay 2 entradas. Seis columnas porque hay 6 neuronas ocultas.</p>
-                <pre id="rawInputHidden"></pre>
-            </div>
-
-            <div class="raw-card">
-                <h3>biasHidden</h3>
-                <p>Un bias por cada neurona oculta.</p>
-                <pre id="rawBiasHidden"></pre>
-            </div>
-
-            <div class="raw-card">
-                <h3>weightsHiddenOutput y biasOutput</h3>
-                <p>Cada neurona oculta aporta algo a la salida final.</p>
-                <pre id="rawOutputWeights"></pre>
-            </div>
+            <details class="note-card raw-card raw-block" open>
+                <summary class="raw-card-head raw-summary">
+                    <div>
+                        <div class="raw-meta">2 x 6</div>
+                        <h3>weightsInputHidden</h3>
+                        <p class="section-copy">
+                            Matriz de pesos desde la entrada hacia la capa oculta. Hace click y se abre la matriz.
+                        </p>
+                    </div>
+                    <div class="step-toggle" aria-hidden="true"></div>
+                </summary>
+                <div class="raw-card-body">
+                    <div id="rawInputHiddenMatrix" class="raw-matrix-slot"></div>
+                    <div id="rawInputHidden" class="raw-list"></div>
+                </div>
+            </details>
+            <details class="note-card raw-card raw-block">
+                <summary class="raw-card-head raw-summary">
+                    <div>
+                        <div class="raw-meta">1 x 6</div>
+                        <h3>biasHidden</h3>
+                        <p class="section-copy">
+                            Un bias por cada neurona oculta. Hace click y se abre el vector.
+                        </p>
+                    </div>
+                    <div class="step-toggle" aria-hidden="true"></div>
+                </summary>
+                <div class="raw-card-body">
+                    <div id="rawBiasHiddenMatrix" class="raw-matrix-slot"></div>
+                    <div id="rawBiasHidden" class="raw-list"></div>
+                </div>
+            </details>
+            <details class="note-card raw-card raw-block">
+                <summary class="raw-card-head raw-summary">
+                    <div>
+                        <div class="raw-meta">6 x 1 + 1</div>
+                        <h3>weightsHiddenOutput y biasOutput</h3>
+                        <p class="section-copy">
+                            Pesos finales hacia la salida y el bias de salida. Hace click y se abre la matriz.
+                        </p>
+                    </div>
+                    <div class="step-toggle" aria-hidden="true"></div>
+                </summary>
+                <div class="raw-card-body">
+                    <div id="rawOutputMatrix" class="raw-matrix-slot"></div>
+                    <div id="rawOutput" class="raw-list"></div>
+                </div>
+            </details>
         </div>
     </section>
 </div>
 
 <script>
+    const learningRate = 0.1;
+
     const model = {
         weightsInputHidden: [
             [-0.3470851175, 1.2406841454, 1.0543798210, 1.0098432140, -0.2093473940, 0.4887988224],
             [-0.9494535745, 0.7221585391, 0.9295971657, 0.0277271336, -0.7640599356, -0.6429553628]
         ],
         biasHidden: [-0.4887272718, -2.0206348785, 0.3452941189, 0.5330659793, -0.2801939293, -0.0812442658],
-        weightsHiddenOutput: [-1.3025728209, 2.5336399057, 1.4388755137, 0.5718853181, -0.7580522540, -0.4640866712],
-        biasOutput: -0.4544761964
+        weightsHiddenOutput: [
+            [-1.3025728209],
+            [2.5336399057],
+            [1.4388755137],
+            [0.5718853181],
+            [-0.7580522540],
+            [-0.4640866712]
+        ],
+        biasOutput: [-0.4544761964]
     };
 
-    const svg = document.getElementById("networkSvg");
-    const neuronsGrid = document.getElementById("neuronsGrid");
     const input1 = document.getElementById("input1");
     const input2 = document.getElementById("input2");
-    const detailPanel = document.getElementById("detailPanel");
-    const detailPanelTitle = document.getElementById("detailPanelTitle");
-    const detailPanelBody = document.getElementById("detailPanelBody");
-    const detailPanelClose = document.getElementById("detailPanelClose");
-    let currentState = null;
+    const input1Value = document.getElementById("input1Value");
+    const input2Value = document.getElementById("input2Value");
+    const expectedValue = document.getElementById("expectedValue");
+    const outputValue = document.getElementById("outputValue");
+    const outputErrorValue = document.getElementById("outputErrorValue");
+    const biasOutputValue = document.getElementById("biasOutputValue");
+    const hiddenSelector = document.getElementById("hiddenSelector");
+    const modelVariables = document.getElementById("modelVariables");
+    const predictSection = document.getElementById("predictSection");
+    const trainSection = document.getElementById("trainSection");
+
+    let selectedHiddenIndex = 0;
 
     function sigmoid(x) {
         return 1 / (1 + Math.exp(-x));
@@ -1041,664 +915,1106 @@
         return value >= 0 ? `+${fixed}` : fixed;
     }
 
-    function formatFactor(value, digits = 4) {
-        return Number(value).toFixed(digits);
+    function classForValue(value) {
+        return value >= 0 ? "positive" : "negative";
     }
 
-    function parenthesize(value, digits = 4) {
-        const fixed = Number(value).toFixed(digits);
-        return value < 0 ? `(${fixed})` : fixed;
+    function createMatrixCard(title, meta, data, rowLabels, colLabels, options = {}) {
+        const highlightRow = options.highlightRow ?? null;
+        const highlightCol = options.highlightCol ?? null;
+        const note = options.note ?? "";
+        const digits = options.digits ?? 4;
+
+        return `
+            <div class="matrix-card">
+                <div class="matrix-title">${title}</div>
+                <div class="matrix-meta">${meta}</div>
+                <div class="matrix-wrap">
+                    <table class="matrix">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                ${colLabels.map((label) => `<th class="axis">${label}</th>`).join("")}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map((row, rowIndex) => `
+                                <tr>
+                                    <th class="axis">${rowLabels[rowIndex]}</th>
+                                    ${row.map((value, colIndex) => `
+                                        <td>
+                                            <div class="cell ${classForValue(value)} ${(rowIndex === highlightRow || colIndex === highlightCol) ? "highlight" : ""}">
+                                                ${signed(value, digits)}
+                                            </div>
+                                        </td>
+                                    `).join("")}
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                </div>
+                ${note ? `<p class="equation-note">${note}</p>` : ""}
+            </div>
+        `;
     }
 
-    function renderDetailText(detail) {
-        return detail.sections.map((section) => {
-            const parts = [section.title, ...section.equations];
-            if (section.description) {
-                parts.push("", section.description);
-            }
-            return parts.join("\n");
-        }).join("\n\n");
+    function createEquationCard(title, lines, note = "") {
+        return `
+            <div class="equation-card card">
+                <div class="equation-title">${title}</div>
+                <div class="equation-lines">
+                    ${lines.map((line) => `<div>${line}</div>`).join("")}
+                </div>
+                ${note ? `<p class="equation-note">${note}</p>` : ""}
+            </div>
+        `;
     }
 
-    function openDetailPanel(detail) {
-        detailPanelTitle.textContent = detail.title || "Detalle";
-        detailPanelBody.textContent = renderDetailText(detail);
-        detailPanel.hidden = false;
-        detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    function createStepMenu(items) {
+        return `
+            <div class="step-menu">
+                ${items.map((item) => `<a href="#${item.id}">${item.label}</a>`).join("")}
+            </div>
+        `;
     }
 
-    function closeDetailPanel() {
-        detailPanel.hidden = true;
-        detailPanelBody.textContent = "";
+    function createStepBlock(title, copy, content, options = {}) {
+        const id = options.id ? `id="${options.id}"` : "";
+        const open = options.open ? "open" : "";
+        const kicker = options.kicker ? `<div class="step-kicker">${options.kicker}</div>` : "";
+
+        return `
+            <details class="step-block card" ${id} ${open}>
+                <summary class="step-summary">
+                    <div class="step-head">
+                        ${kicker}
+                        <div class="step-title">${title}</div>
+                        <p class="step-copy">${copy}</p>
+                    </div>
+                    <div class="step-toggle" aria-hidden="true"></div>
+                </summary>
+                <div class="step-content">
+                    ${content}
+                </div>
+            </details>
+        `;
     }
 
-    function buildHiddenFormulaDetail(state) {
-        const neuron = state.hidden[0];
-        return {
-            title: "Detalle de la neurona h1",
-            sections: [
-                {
-                    title: "Preactivacion z_h1",
-                    equations: [
-                        "z_h1 = (x1 * w_x1,h1) + (x2 * w_x2,h1) + b_h1",
-                        `z_h1 = (${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][0], 3)}) + (${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][0], 3)}) + ${formatNumber(neuron.bias, 3)}`,
-                        `z_h1 = ${formatNumber(neuron.z, 4)}`
-                    ],
-                    description: "z_h1 es la suma ponderada antes de aplicar la funcion sigmoide."
-                },
-                {
-                    title: "Activacion a_h1",
-                    equations: [
-                        "a_h1 = sigmoid(z_h1)",
-                        `a_h1 = sigmoid(${formatNumber(neuron.z, 4)})`,
-                        `a_h1 = ${formatNumber(neuron.activation, 4)}`
-                    ],
-                    description: "a_h1 es la salida final de la neurona oculta h1 y siempre queda entre 0 y 1."
-                }
-            ]
-        };
-    }
-
-    function buildOutputFormulaDetail(state) {
-        const contributionSections = state.hidden.map((neuron) => ({
-            title: `Aporte de h${neuron.index + 1}`,
-            equations: [
-                `aporte_h${neuron.index + 1} = a_h${neuron.index + 1} * w_h${neuron.index + 1}->y`,
-                `aporte_h${neuron.index + 1} = ${formatFactor(neuron.activation, 4)} * ${formatFactor(neuron.outputWeight, 4)}`,
-                `aporte_h${neuron.index + 1} = ${formatNumber(neuron.activation * neuron.outputWeight, 4)}`
-            ],
-            description: `Este es el aporte real de la neurona h${neuron.index + 1} a la salida final.`
-        }));
-
-        const symbolicOutput = state.hidden
-            .map((_, index) => `aporte_h${index + 1}`)
-            .join(" + ");
-        const numericOutput = state.hidden
-            .map((neuron) => parenthesize(neuron.activation * neuron.outputWeight, 4))
-            .join(" + ");
-
-        return {
-            title: "Detalle de la salida final",
-            sections: [
-                {
-                    title: "Formula general",
-                    equations: [
-                        `y = b_out + ${symbolicOutput}`,
-                        `y = ${formatNumber(model.biasOutput, 4)} + ${numericOutput}`,
-                        `y = ${formatNumber(state.prediction, 4)}`
-                    ],
-                    description: "b_out es el bias de salida. La salida final es lineal: no pasa por una sigmoide."
-                },
-                ...contributionSections
-            ]
-        };
-    }
-
-    function buildNeuronDetail(state, neuronIndex) {
-        const neuron = state.hidden[neuronIndex];
-        const contribution = neuron.activation * neuron.outputWeight;
-        return {
-            title: `Detalle de la neurona h${neuronIndex + 1}`,
-            sections: [
-                {
-                    title: "Peso de salida",
-                    equations: [
-                        `w_h${neuronIndex + 1}->y = ${formatNumber(neuron.outputWeight, 4)}`
-                    ],
-                    description: "Es el peso que conecta esta neurona oculta con la salida y."
-                },
-                {
-                    title: "Preactivacion",
-                    equations: [
-                        `z_h${neuronIndex + 1} = (x1 * w_x1,h${neuronIndex + 1}) + (x2 * w_x2,h${neuronIndex + 1}) + b_h${neuronIndex + 1}`,
-                        `z_h${neuronIndex + 1} = (${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][neuronIndex], 3)}) + (${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][neuronIndex], 3)}) + ${formatNumber(neuron.bias, 3)}`,
-                        `z_h${neuronIndex + 1} = ${formatNumber(neuron.z, 4)}`
-                    ],
-                    description: "z es la suma ponderada antes de la activacion."
-                },
-                {
-                    title: "Activacion",
-                    equations: [
-                        `a_h${neuronIndex + 1} = sigmoid(z_h${neuronIndex + 1})`,
-                        `a_h${neuronIndex + 1} = sigmoid(${formatNumber(neuron.z, 4)})`,
-                        `a_h${neuronIndex + 1} = ${formatNumber(neuron.activation, 4)}`
-                    ],
-                    description: "a es la salida de la neurona despues de aplicar la funcion sigmoide."
-                },
-                {
-                    title: "Contribucion a la salida",
-                    equations: [
-                        `aporte_h${neuronIndex + 1} = a_h${neuronIndex + 1} * w_h${neuronIndex + 1}->y`,
-                        `aporte_h${neuronIndex + 1} = ${formatFactor(neuron.activation, 4)} * ${formatFactor(neuron.outputWeight, 4)}`,
-                        `aporte_h${neuronIndex + 1} = ${formatNumber(contribution, 4)}`
-                    ],
-                    description: "Este valor es la parte concreta de y explicada por esta neurona."
-                }
-            ]
-        };
-    }
-
-    function buildTrainingStepDetail(stepNumber) {
-        const file = "src/main/java/org/oswaldo/model/NeuralNetwork.java";
-        const setupFile = "src/main/java/org/oswaldo/util/TrainModel.java";
-
-        if (stepNumber === 1) {
-            return {
-                title: "Codigo Java: inicializacion aleatoria",
-                sections: [
-                    {
-                        title: `${file} - initializeWeights()`,
-                        equations: [
-                            "private void initializeWeights() {",
-                            "    for (int i = 0; i < inputSize; i++) {",
-                            "        for (int j = 0; j < hiddenSize; j++) {",
-                            "            weightsInputHidden[i][j] = random.nextDouble() * 2 - 1;",
-                            "        }",
-                            "    }",
-                            "",
-                            "    for (int j = 0; j < hiddenSize; j++) {",
-                            "        biasHidden[j] = random.nextDouble() * 2 - 1;",
-                            "    }",
-                            "",
-                            "    for (int j = 0; j < hiddenSize; j++) {",
-                            "        for (int k = 0; k < outputSize; k++) {",
-                            "            weightsHiddenOutput[j][k] = random.nextDouble() * 2 - 1;",
-                            "        }",
-                            "    }",
-                            "",
-                            "    for (int k = 0; k < outputSize; k++) {",
-                            "        biasOutput[k] = random.nextDouble() * 2 - 1;",
-                            "    }",
-                            "}"
-                        ],
-                        description: "Aca la red arranca con pesos y biases aleatorios entre -1 y 1."
-                    }
-                ]
-            };
-        }
-
-        if (stepNumber === 2) {
-            return {
-                title: "Codigo Java: forward pass",
-                sections: [
-                    {
-                        title: `${file} - train()`,
-                        equations: [
-                            "// FORWARD PASS",
-                            "for (int j = 0; j < hiddenSize; j++) {",
-                            "    double sum = biasHidden[j];",
-                            "    for (int i = 0; i < inputSize; i++) {",
-                            "        sum += inputs[i] * weightsInputHidden[i][j];",
-                            "    }",
-                            "    hidden[j] = sigmoid(sum);",
-                            "}",
-                            "",
-                            "for (int k = 0; k < outputSize; k++) {",
-                            "    double sum = biasOutput[k];",
-                            "    for (int j = 0; j < hiddenSize; j++) {",
-                            "        sum += hidden[j] * weightsHiddenOutput[j][k];",
-                            "    }",
-                            "    outputs[k] = sum; // salida lineal",
-                            "}"
-                        ],
-                        description: "Este bloque calcula primero la capa oculta y despues la salida final."
-                    }
-                ]
-            };
-        }
-
-        if (stepNumber === 3) {
-            return {
-                title: "Codigo Java: error de salida",
-                sections: [
-                    {
-                        title: `${file} - train()`,
-                        equations: [
-                            "// ERROR EN LA SALIDA",
-                            "double[] outputErrors = new double[outputSize];",
-                            "for (int k = 0; k < outputSize; k++) {",
-                            "    outputErrors[k] = expected[k] - outputs[k];",
-                            "    totalError += outputErrors[k] * outputErrors[k];",
-                            "}"
-                        ],
-                        description: "Aca se calcula cuanto se equivoco la salida y se acumula el error total de la epoca."
-                    }
-                ]
-            };
-        }
-
-        if (stepNumber === 4) {
-            return {
-                title: "Codigo Java: backpropagation",
-                sections: [
-                    {
-                        title: `${file} - train()`,
-                        equations: [
-                            "// ERROR EN LA CAPA OCULTA",
-                            "double[] hiddenErrors = new double[hiddenSize];",
-                            "for (int j = 0; j < hiddenSize; j++) {",
-                            "    double error = 0.0;",
-                            "    for (int k = 0; k < outputSize; k++) {",
-                            "        error += outputErrors[k] * weightsHiddenOutput[j][k];",
-                            "    }",
-                            "    hiddenErrors[j] = error * sigmoidDerivative(hidden[j]);",
-                            "}"
-                        ],
-                        description: "Este bloque reparte el error hacia atras y calcula cuanto ajustarse en cada neurona oculta."
-                    }
-                ]
-            };
-        }
-
-        if (stepNumber === 5) {
-            return {
-                title: "Codigo Java: actualizacion de pesos y biases",
-                sections: [
-                    {
-                        title: `${file} - train()`,
-                        equations: [
-                            "// ACTUALIZAR PESOS HIDDEN -> OUTPUT",
-                            "for (int j = 0; j < hiddenSize; j++) {",
-                            "    for (int k = 0; k < outputSize; k++) {",
-                            "        weightsHiddenOutput[j][k] += learningRate * outputErrors[k] * hidden[j];",
-                            "    }",
-                            "}",
-                            "",
-                            "// ACTUALIZAR BIAS OUTPUT",
-                            "for (int k = 0; k < outputSize; k++) {",
-                            "    biasOutput[k] += learningRate * outputErrors[k];",
-                            "}",
-                            "",
-                            "// ACTUALIZAR PESOS INPUT HIDDEN",
-                            "for (int i = 0; i < inputSize; i++) {",
-                            "    for (int j = 0; j < hiddenSize; j++) {",
-                            "        weightsInputHidden[i][j] += learningRate * hiddenErrors[j] * inputs[i];",
-                            "    }",
-                            "}",
-                            "",
-                            "// ACTUALIZAR BIAS HIDDEN",
-                            "for (int j = 0; j < hiddenSize; j++) {",
-                            "    biasHidden[j] += learningRate * hiddenErrors[j];",
-                            "}"
-                        ],
-                        description: "Aca ocurre el aprendizaje real: se mueven pesos y biases usando learningRate."
-                    }
-                ]
-            };
-        }
-
-        return {
-            title: "Codigo Java: repeticion de epocas",
-            sections: [
-                {
-                    title: `${setupFile} + ${file}`,
-                    equations: [
-                        "NeuralNetwork nn = new NeuralNetwork(2, 6, 1);",
-                        "nn.train(trainingInputs, trainingOutputs, 20000, 0.1);",
-                        "",
-                        "for (int epoch = 0; epoch < epochs; epoch++) {",
-                        "    double totalError = 0.0;",
-                        "    for (int sample = 0; sample < trainingInputs.length; sample++) {",
-                        "        ...",
-                        "    }",
-                        "",
-                        "    if (epoch % 1000 == 0) {",
-                        "        System.out.printf(\"Epoch %d - Error total: %.8f%n\", epoch, totalError);",
-                        "    }",
-                        "}"
-                    ],
-                    description: "Este bloque muestra donde se definen las 20000 epocas y como se repite el entrenamiento sobre todas las muestras."
-                }
-            ]
-        };
-    }
-
-    function openDetailFromCard(card) {
-        if (!currentState) {
-            return;
-        }
-
-        if (card.dataset.detailType === "hidden-formula") {
-            openDetailPanel(buildHiddenFormulaDetail(currentState));
-            return;
-        }
-
-        if (card.dataset.detailType === "output-formula") {
-            openDetailPanel(buildOutputFormulaDetail(currentState));
-            return;
-        }
-
-        if (card.dataset.detailType === "training-step") {
-            openDetailPanel(buildTrainingStepDetail(Number(card.dataset.trainingStep)));
-            return;
-        }
-
-        if (card.dataset.detailType === "neuron") {
-            openDetailPanel(buildNeuronDetail(currentState, Number(card.dataset.neuronIndex)));
-        }
-    }
-
-    function weightColor(weight) {
-        return weight >= 0 ? "#0f766e" : "#b42318";
-    }
-
-    function influenceOpacity(value, maxValue) {
-        if (maxValue === 0) {
-            return 0.18;
-        }
-        return 0.18 + (Math.abs(value) / maxValue) * 0.72;
-    }
-
-    function thickness(value, maxValue) {
-        if (maxValue === 0) {
-            return 1.5;
-        }
-        return 1.4 + (Math.abs(value) / maxValue) * 7.6;
+    function transposeColumnMatrix(matrix) {
+        return [matrix.map((row) => row[0])];
     }
 
     function computeState(x1, x2) {
-        const hidden = model.biasHidden.map((bias, j) => {
-            const z = x1 * model.weightsInputHidden[0][j]
-                + x2 * model.weightsInputHidden[1][j]
-                + bias;
-            const activation = sigmoid(z);
-            return {
-                index: j,
-                z,
-                activation,
-                contributionFromX1: x1 * model.weightsInputHidden[0][j],
-                contributionFromX2: x2 * model.weightsInputHidden[1][j],
-                bias,
-                outputWeight: model.weightsHiddenOutput[j]
-            };
+        const inputs = [x1, x2];
+
+        const hiddenSums = model.biasHidden.map((bias, j) => {
+            let sum = bias;
+            for (let i = 0; i < inputs.length; i++) {
+                sum += inputs[i] * model.weightsInputHidden[i][j];
+            }
+            return sum;
         });
 
-        const outputContributions = hidden.map((neuron) => ({
-            index: neuron.index,
-            activation: neuron.activation,
-            outputWeight: neuron.outputWeight,
-            contribution: neuron.activation * neuron.outputWeight
-        }));
+        const hidden = hiddenSums.map((sum) => sigmoid(sum));
 
-        const prediction = outputContributions.reduce(
-            (sum, item) => sum + item.contribution,
-            model.biasOutput
+        const outputProducts = hidden.map((value, j) => value * model.weightsHiddenOutput[j][0]);
+        const outputs = [
+            outputProducts.reduce((sum, value) => sum + value, model.biasOutput[0])
+        ];
+
+        const expected = [x1 + x2];
+        const outputErrors = [expected[0] - outputs[0]];
+        const squaredOutputErrors = outputErrors.map((value) => value * value);
+
+        const projectedError = model.weightsHiddenOutput.map((row) => outputErrors[0] * row[0]);
+        const sensitivity = hidden.map((value) => value * (1 - value));
+        const hiddenErrors = projectedError.map((value, j) => value * sensitivity[j]);
+
+        const deltaWeightsHiddenOutput = model.weightsHiddenOutput.map((row, j) => [
+            learningRate * outputErrors[0] * hidden[j]
+        ]);
+        const deltaBiasOutput = [learningRate * outputErrors[0]];
+
+        const deltaWeightsInputHidden = inputs.map((inputValue) =>
+            hiddenErrors.map((hiddenError) => learningRate * hiddenError * inputValue)
         );
+        const deltaBiasHidden = hiddenErrors.map((hiddenError) => learningRate * hiddenError);
+
+        const updatedWeightsHiddenOutput = model.weightsHiddenOutput.map((row, j) => [
+            row[0] + deltaWeightsHiddenOutput[j][0]
+        ]);
+        const updatedBiasOutput = [model.biasOutput[0] + deltaBiasOutput[0]];
+        const updatedWeightsInputHidden = model.weightsInputHidden.map((row, i) =>
+            row.map((value, j) => value + deltaWeightsInputHidden[i][j])
+        );
+        const updatedBiasHidden = model.biasHidden.map((value, j) => value + deltaBiasHidden[j]);
 
         return {
-            x1,
-            x2,
+            inputs,
+            hiddenSums,
             hidden,
-            outputContributions,
-            prediction,
-            expected: x1 + x2
+            outputProducts,
+            outputs,
+            expected,
+            outputErrors,
+            squaredOutputErrors,
+            projectedError,
+            sensitivity,
+            hiddenErrors,
+            deltaWeightsHiddenOutput,
+            deltaBiasOutput,
+            deltaWeightsInputHidden,
+            deltaBiasHidden,
+            updatedWeightsHiddenOutput,
+            updatedBiasOutput,
+            updatedWeightsInputHidden,
+            updatedBiasHidden
         };
     }
 
-    function createNode(cx, cy, label, value, kind) {
-        const fill = kind === "input"
-            ? "#fff4de"
-            : kind === "output"
-                ? "#dcfce7"
-                : "#ffffff";
+    function renderHiddenSelector() {
+        hiddenSelector.innerHTML = model.biasHidden.map((_, index) => `
+            <button
+                type="button"
+                class="${index === selectedHiddenIndex ? "is-active" : ""}"
+                data-hidden-index="${index}">
+                hidden[${index}]
+            </button>
+        `).join("");
+    }
 
-        return `
-            <g>
-                <circle cx="${cx}" cy="${cy}" r="31" fill="${fill}" stroke="rgba(31,41,51,0.18)" stroke-width="2"></circle>
-                <text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2933">${label}</text>
-                <text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="12" fill="#6b7280">${formatNumber(value, 3)}</text>
-            </g>
+    function renderHeaderMetrics(state) {
+        input1Value.textContent = formatNumber(state.inputs[0], 2);
+        input2Value.textContent = formatNumber(state.inputs[1], 2);
+        expectedValue.textContent = formatNumber(state.expected[0], 4);
+        outputValue.textContent = formatNumber(state.outputs[0], 4);
+        outputErrorValue.textContent = signed(state.outputErrors[0], 4);
+        outputErrorValue.className = `stat-value ${state.outputErrors[0] >= 0 ? "positive-text" : "negative-text"}`;
+        biasOutputValue.textContent = formatNumber(model.biasOutput[0], 4);
+    }
+
+    function renderModelVariables() {
+        modelVariables.innerHTML = `
+            ${createStepMenu([
+                { id: "model-step-1", label: "Variables base" },
+                { id: "model-step-2", label: "Origen de weightsHiddenOutput[0][0]" }
+            ])}
+            ${createStepBlock(
+                "Variables que ya existen antes de llamar a predict()",
+                "Estas matrices y vectores vienen del modelo entrenado. En Java se crean en el constructor y se inicializan en initializeWeights(). Despues train() las va modificando.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "weightsInputHidden",
+                            "Matriz 2 x 6. Declarada en NeuralNetwork como double[][] weightsInputHidden.",
+                            model.weightsInputHidden,
+                            ["weightsInputHidden[0][j]", "weightsInputHidden[1][j]"],
+                            ["hidden[0]", "hidden[1]", "hidden[2]", "hidden[3]", "hidden[4]", "hidden[5]"],
+                            { highlightCol: selectedHiddenIndex }
+                        )}
+                        ${createMatrixCard(
+                            "biasHidden",
+                            "Vector 1 x 6. Declarado en NeuralNetwork como double[] biasHidden.",
+                            [model.biasHidden],
+                            ["biasHidden"],
+                            ["hidden[0]", "hidden[1]", "hidden[2]", "hidden[3]", "hidden[4]", "hidden[5]"],
+                            { highlightCol: selectedHiddenIndex }
+                        )}
+                    </div>
+                    <div class="math-row" style="margin-top: 14px;">
+                        ${createMatrixCard(
+                            "weightsHiddenOutput",
+                            "Matriz 6 x 1. Declarada en NeuralNetwork como double[][] weightsHiddenOutput.",
+                            model.weightsHiddenOutput,
+                            ["hidden[0]", "hidden[1]", "hidden[2]", "hidden[3]", "hidden[4]", "hidden[5]"],
+                            ["outputs[0]"],
+                            { highlightRow: selectedHiddenIndex }
+                        )}
+                        ${createMatrixCard(
+                            "biasOutput",
+                            "Vector 1 x 1. Declarado en NeuralNetwork como double[] biasOutput.",
+                            [model.biasOutput],
+                            ["biasOutput"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                    </div>
+                `,
+                { id: "model-step-1", open: true, kicker: "Abrir para ver las matrices y bias del objeto" }
+            )}
+            ${createStepBlock(
+                "De donde sale weightsHiddenOutput[0][0]",
+                "Esto responde exactamente a tu pelea principal: ese numero no se calcula en el paso 3. Ese numero ya vive dentro de la matriz weightsHiddenOutput.",
+                createEquationCard(
+                    "Lectura directa del codigo",
+                    [
+                        "weightsHiddenOutput se declara en NeuralNetwork como double[][]",
+                        "weightsHiddenOutput tiene forma [6][1] porque hay 6 hidden y 1 output",
+                        "weightsHiddenOutput[0][0] = -1.3026",
+                        "weightsHiddenOutput[1][0] = +2.5336",
+                        "weightsHiddenOutput[2][0] = +1.4389",
+                        "",
+                        "Entonces:",
+                        "el peso desde hidden[0] hacia outputs[0] es weightsHiddenOutput[0][0]",
+                        "el peso desde hidden[1] hacia outputs[0] es weightsHiddenOutput[1][0]"
+                    ],
+                    "La web ya no deberia mostrar ese numero como si apareciera de la nada. Tiene que salir siempre de su matriz real."
+                ),
+                { id: "model-step-2", open: false, kicker: "Abrir solo si queres rastrear un valor puntual" }
+            )}
         `;
     }
 
-    function drawNetwork(state) {
-        const inputNodes = [
-            { x: 120, y: 140, label: "x1", value: state.x1 },
-            { x: 120, y: 310, label: "x2", value: state.x2 }
-        ];
+    function renderPredict(state) {
+        const j = selectedHiddenIndex;
+        const hiddenLabels = ["hidden[0]", "hidden[1]", "hidden[2]", "hidden[3]", "hidden[4]", "hidden[5]"];
+        const inputLabels = ["inputs[0]", "inputs[1]"];
+        const outputWeightTranspose = transposeColumnMatrix(model.weightsHiddenOutput);
+        const outputProductsRow = [state.outputProducts];
+        const hiddenSumsRow = [state.hiddenSums];
+        const hiddenRow = [state.hidden];
 
-        const hiddenNodes = state.hidden.map((neuron, index) => ({
-            x: 480,
-            y: 70 + index * 62,
-            label: `h${index + 1}`,
-            value: neuron.activation
-        }));
+        predictSection.innerHTML = `
+            ${createStepMenu([
+                { id: "predict-step-1", label: "1. inputs -> hidden" },
+                { id: "predict-step-2", label: "2. sigmoid(sum)" },
+                { id: "predict-step-3", label: "3. hidden -> outputs[0]" }
+            ])}
+            ${createStepBlock(
+                "Paso 1: inputs x weightsInputHidden + biasHidden",
+                "En predict(), primero el loop de hidden usa inputs, weightsInputHidden y biasHidden. En el codigo la variable local se llama sum. Aca mostramos el resumen de todos esos sum para cada j.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "inputs",
+                            "Vector 1 x 2. En Java entra como double[] inputs.",
+                            [state.inputs],
+                            ["inputs"],
+                            inputLabels,
+                            {}
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "weightsInputHidden",
+                            "Matriz 2 x 6. Cada columna alimenta una neurona oculta.",
+                            model.weightsInputHidden,
+                            inputLabels,
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "biasHidden",
+                            "Vector 1 x 6.",
+                            [model.biasHidden],
+                            ["biasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "sum por cada j",
+                            "Vector 1 x 6. Es un resumen de la variable local sum antes de aplicar sigmoid.",
+                            hiddenSumsRow,
+                            ["sum"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Detalle para hidden[${j}]`,
+                        [
+                            `sum = biasHidden[${j}] + inputs[0] * weightsInputHidden[0][${j}] + inputs[1] * weightsInputHidden[1][${j}]`,
+                            `sum = ${formatNumber(model.biasHidden[j], 4)} + ${formatNumber(state.inputs[0], 2)} * ${formatNumber(model.weightsInputHidden[0][j], 4)} + ${formatNumber(state.inputs[1], 2)} * ${formatNumber(model.weightsInputHidden[1][j], 4)}`,
+                            `sum = ${formatNumber(state.hiddenSums[j], 4)}`
+                        ],
+                        `La columna resaltada es hidden[${j}]. Todo sale de weightsInputHidden[*][${j}] y biasHidden[${j}].`
+                    )}
+                `,
+                { id: "predict-step-1", open: true, kicker: "Abrir para seguir una sola columna j" }
+            )}
+            ${createStepBlock(
+                "Paso 2: hidden[j] = sigmoid(sum)",
+                "Despues del sum, el codigo hace hidden[j] = sigmoid(sum). Aca no aparece una matriz nueva: solo se aplica sigmoid a cada posicion del vector sum.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "sum por cada j",
+                            "Vector 1 x 6.",
+                            hiddenSumsRow,
+                            ["sum"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">sigmoid</div>
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "hidden",
+                            "Vector 1 x 6. Esto corresponde al arreglo hidden del codigo.",
+                            hiddenRow,
+                            ["hidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Detalle para hidden[${j}]`,
+                        [
+                            `hidden[${j}] = sigmoid(sum)`,
+                            `hidden[${j}] = sigmoid(${formatNumber(state.hiddenSums[j], 4)})`,
+                            `hidden[${j}] = ${formatNumber(state.hidden[j], 4)}`
+                        ],
+                        "La variable real del codigo es hidden[j]. La web no la cambia por otro nombre."
+                    )}
+                `,
+                { id: "predict-step-2", open: false, kicker: "Abrir para ver como nace hidden[j]" }
+            )}
+            ${createStepBlock(
+                "Paso 3: hidden x weightsHiddenOutput + biasOutput = outputs[0]",
+                "Aca esta el paso que mas te importaba. weightsHiddenOutput no se inventa aca: ya venia en el modelo. En este paso solo se usa.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "hidden",
+                            "Vector 1 x 6.",
+                            hiddenRow,
+                            ["hidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "weightsHiddenOutput",
+                            "Matriz 6 x 1. Cada fila corresponde a un hidden[j].",
+                            model.weightsHiddenOutput,
+                            hiddenLabels,
+                            ["outputs[0]"],
+                            { highlightRow: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "biasOutput",
+                            "Vector 1 x 1.",
+                            [model.biasOutput],
+                            ["biasOutput"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "outputs",
+                            "Vector 1 x 1. Salida final del metodo predict().",
+                            [state.outputs],
+                            ["outputs"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                    </div>
+                    <div class="math-row" style="margin-top: 14px;">
+                        ${createMatrixCard(
+                            "weightsHiddenOutput transpuesta",
+                            "Vista 1 x 6 solo para leer el producto fila por columna mas facilmente. No es una variable nueva del codigo.",
+                            outputWeightTranspose,
+                            ["weightsHiddenOutput^T"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        ${createMatrixCard(
+                            "productos individuales",
+                            "Cada posicion es hidden[j] * weightsHiddenOutput[j][0].",
+                            outputProductsRow,
+                            ["producto"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `De donde sale weightsHiddenOutput[${j}][0]`,
+                        [
+                            `weightsHiddenOutput[${j}][0] = ${formatNumber(model.weightsHiddenOutput[j][0], 4)}`,
+                            "",
+                            `Para hidden[${j}]:`,
+                            `producto = hidden[${j}] * weightsHiddenOutput[${j}][0]`,
+                            `producto = ${formatNumber(state.hidden[j], 4)} * ${formatNumber(model.weightsHiddenOutput[j][0], 4)}`,
+                            `producto = ${formatNumber(state.outputProducts[j], 4)}`
+                        ],
+                        `Aca no hay adivinanza. El numero sale directamente de la fila ${j} de weightsHiddenOutput.`
+                    )}
+                    ${createEquationCard(
+                        "Producto completo del ultimo paso",
+                        [
+                            "outputs[0] = biasOutput[0] + sum(hidden[j] * weightsHiddenOutput[j][0])",
+                            `outputs[0] = ${formatNumber(model.biasOutput[0], 4)} + ${state.hidden.map((value, index) => `(${formatNumber(value, 4)} * ${formatNumber(model.weightsHiddenOutput[index][0], 4)})`).join(" + ")}`,
+                            `outputs[0] = ${formatNumber(state.outputs[0], 4)}`
+                        ],
+                        "Este es el final de predict(): toma hidden, usa weightsHiddenOutput y biasOutput, y produce outputs[0]."
+                    )}
+                `,
+                { id: "predict-step-3", open: false, kicker: "Abrir para seguir la salida final" }
+            )}
+        `;
+    }
 
-        const outputNode = { x: 830, y: 225, label: "y", value: state.prediction };
+    function renderTrain(state) {
+        const j = selectedHiddenIndex;
+        const hiddenLabels = ["hidden[0]", "hidden[1]", "hidden[2]", "hidden[3]", "hidden[4]", "hidden[5]"];
+        const outputWeightTranspose = transposeColumnMatrix(model.weightsHiddenOutput);
+        const hiddenRow = [state.hidden];
+        const outputRow = [state.outputs];
+        const outputErrorRow = [state.outputErrors];
+        const hiddenErrorRow = [state.hiddenErrors];
+        const inputsColumn = [[state.inputs[0]], [state.inputs[1]]];
 
-        const inputContribs = [];
-        const outputContribs = [];
+        trainSection.innerHTML = `
+            ${createStepMenu([
+                { id: "train-step-1", label: "1. Arranque" },
+                { id: "train-step-2", label: "2. Forward hidden" },
+                { id: "train-step-3", label: "3. Forward output" },
+                { id: "train-step-4", label: "4. outputErrors" },
+                { id: "train-step-5", label: "5. hiddenErrors" },
+                { id: "train-step-6", label: "6. update weightsHiddenOutput" },
+                { id: "train-step-7", label: "7. update biasOutput" },
+                { id: "train-step-8", label: "8. update weightsInputHidden" },
+                { id: "train-step-9", label: "9. update biasHidden" }
+            ])}
+            ${createStepBlock(
+                "1. Asi arranca realmente train(...)",
+                "Este bloque no hace cuentas todavia. Solo ubica las variables que nacen al entrar al metodo y al entrar al sample actual.",
+                `
+                    ${createEquationCard(
+                        "Lectura directa del metodo",
+                        [
+                            "for (int epoch = 0; epoch < epochs; epoch++)",
+                            "    totalError = 0.0",
+                            "    for (int sample = 0; sample < trainingInputs.length; sample++)",
+                            "        inputs = trainingInputs[sample]",
+                            "        expected = trainingOutputs[sample]",
+                            "        hidden = new double[hiddenSize]",
+                            "        outputs = new double[outputSize]"
+                        ],
+                        "La web muestra una sola pasada: un sample y una iteracion. No intenta mostrar los miles de epochs al mismo tiempo."
+                    )}
+                    <div class="math-row" style="margin-top: 14px;">
+                        ${createMatrixCard(
+                            "trainingInputs[sample]",
+                            "En esta simulacion visual, este sample usa los sliders actuales.",
+                            [state.inputs],
+                            ["sample actual"],
+                            ["inputs[0]", "inputs[1]"],
+                            {}
+                        )}
+                        ${createMatrixCard(
+                            "trainingOutputs[sample]",
+                            "En esta pagina, el esperado del sample se arma como inputs[0] + inputs[1].",
+                            [state.expected],
+                            ["sample actual"],
+                            ["expected[0]"],
+                            {}
+                        )}
+                        ${createEquationCard(
+                            "Arreglos nuevos del sample",
+                            [
+                                "hidden = new double[hiddenSize]",
+                                "hidden = [0, 0, 0, 0, 0, 0]",
+                                "",
+                                "outputs = new double[outputSize]",
+                                "outputs = [0]"
+                            ],
+                            "Asi nacen dentro del metodo antes del forward pass."
+                        )}
+                    </div>
+                `,
+                { id: "train-step-1", open: true, kicker: "Abrir para ubicarte dentro del metodo" }
+            )}
+            ${createStepBlock(
+                "2. FORWARD PASS: llenar hidden[j]",
+                "Ahora corre exactamente este bloque del codigo: para cada j, arranca con biasHidden[j], suma inputs[i] * weightsInputHidden[i][j] y luego aplica sigmoid(sum).",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "inputs",
+                            "double[] inputs = trainingInputs[sample]",
+                            [state.inputs],
+                            ["inputs"],
+                            ["inputs[0]", "inputs[1]"],
+                            {}
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "weightsInputHidden",
+                            "Cada columna j alimenta a hidden[j].",
+                            model.weightsInputHidden,
+                            ["weightsInputHidden[0][j]", "weightsInputHidden[1][j]"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "biasHidden",
+                            "Cada hidden[j] arranca desde biasHidden[j].",
+                            [model.biasHidden],
+                            ["biasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">-></div>
+                        ${createMatrixCard(
+                            "hidden",
+                            "Despues de aplicar sigmoid(sum).",
+                            hiddenRow,
+                            ["hidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Lo que hace el loop para j = ${j}`,
+                        [
+                            `double sum = biasHidden[${j}]`,
+                            `sum += inputs[0] * weightsInputHidden[0][${j}]`,
+                            `sum += inputs[1] * weightsInputHidden[1][${j}]`,
+                            `sum = ${formatNumber(model.biasHidden[j], 4)} + (${formatNumber(state.inputs[0], 2)} * ${formatNumber(model.weightsInputHidden[0][j], 4)}) + (${formatNumber(state.inputs[1], 2)} * ${formatNumber(model.weightsInputHidden[1][j], 4)})`,
+                            `sum = ${formatNumber(state.hiddenSums[j], 4)}`,
+                            `hidden[${j}] = sigmoid(sum)`,
+                            `hidden[${j}] = ${formatNumber(state.hidden[j], 4)}`
+                        ],
+                        "Aca se ve de donde sale hidden[j]: sale de una columna de weightsInputHidden mas biasHidden[j]."
+                    )}
+                `,
+                { id: "train-step-2", open: false, kicker: "Abrir para seguir el primer loop del forward pass" }
+            )}
+            ${createStepBlock(
+                "3. FORWARD PASS: llenar outputs[k]",
+                "Despues el metodo pasa a la salida. Para cada k, arranca con biasOutput[k] y le suma hidden[j] * weightsHiddenOutput[j][k]. En tu caso solo existe k = 0.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "hidden",
+                            "El arreglo que ya se calculo en el paso anterior.",
+                            hiddenRow,
+                            ["hidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "weightsHiddenOutput",
+                            "Cada fila j conecta hidden[j] con outputs[0].",
+                            model.weightsHiddenOutput,
+                            hiddenLabels,
+                            ["outputs[0]"],
+                            { highlightRow: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "biasOutput",
+                            "La salida arranca en biasOutput[0].",
+                            [model.biasOutput],
+                            ["biasOutput"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "outputs",
+                            "Resultado final del forward pass.",
+                            outputRow,
+                            ["outputs"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        "Lo que hace el loop para k = 0",
+                        [
+                            "double sum = biasOutput[0]",
+                            `sum = ${formatNumber(model.biasOutput[0], 4)}`,
+                            ...state.hidden.map((value, index) => `sum += hidden[${index}] * weightsHiddenOutput[${index}][0] = ${formatNumber(value, 4)} * ${formatNumber(model.weightsHiddenOutput[index][0], 4)}`),
+                            `outputs[0] = ${formatNumber(state.outputs[0], 4)}`
+                        ],
+                        `Aca aparece exactamente el numero que te molestaba: weightsHiddenOutput[${j}][0] = ${formatNumber(model.weightsHiddenOutput[j][0], 4)}. No nace aca; se toma de la matriz.`
+                    )}
+                `,
+                { id: "train-step-3", open: false, kicker: "Abrir para seguir la salida lineal" }
+            )}
+            ${createStepBlock(
+                "4. ERROR EN LA SALIDA",
+                "Recien despues del forward pass el metodo crea outputErrors y acumula totalError. Este paso compara expected[k] contra outputs[k].",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "expected",
+                            "double[] expected = trainingOutputs[sample]",
+                            [state.expected],
+                            ["expected"],
+                            ["expected[0]"],
+                            {}
+                        )}
+                        <div class="math-op">-</div>
+                        ${createMatrixCard(
+                            "outputs",
+                            "Lo que acaba de salir del forward pass.",
+                            outputRow,
+                            ["outputs"],
+                            ["outputs[0]"],
+                            {}
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "outputErrors",
+                            "La resta exacta que usa el codigo.",
+                            outputErrorRow,
+                            ["outputErrors"],
+                            ["outputErrors[0]"],
+                            {}
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        "Lo que hace el loop de outputErrors",
+                        [
+                            "outputErrors[0] = expected[0] - outputs[0]",
+                            `outputErrors[0] = ${formatNumber(state.expected[0], 4)} - ${formatNumber(state.outputs[0], 4)}`,
+                            `outputErrors[0] = ${formatNumber(state.outputErrors[0], 4)}`,
+                            "",
+                            "totalError += outputErrors[0] * outputErrors[0]",
+                            `totalError += ${formatNumber(state.outputErrors[0], 4)} * ${formatNumber(state.outputErrors[0], 4)}`,
+                            `aporte de este sample a totalError = ${formatNumber(state.squaredOutputErrors[0], 6)}`
+                        ],
+                        "Este bloque no actualiza pesos. Solo mide cuanto se equivoco la salida."
+                    )}
+                `,
+                { id: "train-step-4", open: false, kicker: "Abrir para ver como nace outputErrors[0]" }
+            )}
+            ${createStepBlock(
+                "5. ERROR EN LA CAPA OCULTA",
+                "Despues el metodo crea hiddenErrors. Primero junta el error que vuelve desde la salida. Despues lo multiplica por sigmoidDerivative(hidden[j]).",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "outputErrors",
+                            "Sale del paso anterior.",
+                            outputErrorRow,
+                            ["outputErrors"],
+                            ["outputErrors[0]"],
+                            {}
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "weightsHiddenOutput transpuesta",
+                            "Solo se transpone visualmente para leer como fila. La variable real sigue siendo weightsHiddenOutput.",
+                            outputWeightTranspose,
+                            ["weightsHiddenOutput^T"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "error que vuelve",
+                            "Este numero todavia no es hiddenErrors. Falta aplicar sigmoidDerivative(hidden[j]).",
+                            [state.projectedError],
+                            ["error"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    <div class="math-row" style="margin-top: 14px;">
+                        ${createMatrixCard(
+                            "sigmoidDerivative(hidden[j])",
+                            "En tu codigo: hidden[j] * (1 - hidden[j]).",
+                            [state.sensitivity],
+                            ["derivative"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "hiddenErrors",
+                            "Ahora si: este es el arreglo final que usa train().",
+                            hiddenErrorRow,
+                            ["hiddenErrors"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Lo que hace el loop para j = ${j}`,
+                        [
+                            "double error = 0.0",
+                            `error += outputErrors[0] * weightsHiddenOutput[${j}][0]`,
+                            `error = ${formatNumber(state.outputErrors[0], 4)} * ${formatNumber(model.weightsHiddenOutput[j][0], 4)}`,
+                            `error = ${formatNumber(state.projectedError[j], 4)}`,
+                            "",
+                            `hiddenErrors[${j}] = error * sigmoidDerivative(hidden[${j}])`,
+                            `hiddenErrors[${j}] = ${formatNumber(state.projectedError[j], 4)} * ${formatNumber(state.sensitivity[j], 4)}`,
+                            `hiddenErrors[${j}] = ${formatNumber(state.hiddenErrors[j], 4)}`
+                        ],
+                        "Aca se entiende mejor la logica del metodo: primero baja el error desde outputs, luego se adapta a la neurona oculta."
+                    )}
+                `,
+                { id: "train-step-5", open: false, kicker: "Abrir para ver como nace hiddenErrors[j]" }
+            )}
+            ${createStepBlock(
+                "6. ACTUALIZAR PESOS HIDDEN -> OUTPUT",
+                "Este es el primer bloque que modifica el modelo. Ya no estamos calculando errores: ahora estamos cambiando weightsHiddenOutput.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "weightsHiddenOutput antes",
+                            "El valor actual guardado en el objeto.",
+                            model.weightsHiddenOutput,
+                            hiddenLabels,
+                            ["outputs[0]"],
+                            { highlightRow: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "deltaWeightsHiddenOutput",
+                            "Cada fila es learningRate * outputErrors[0] * hidden[j].",
+                            state.deltaWeightsHiddenOutput,
+                            hiddenLabels,
+                            ["outputs[0]"],
+                            { highlightRow: j }
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "weightsHiddenOutput despues",
+                            "Asi quedaria tras una iteracion.",
+                            state.updatedWeightsHiddenOutput,
+                            hiddenLabels,
+                            ["outputs[0]"],
+                            { highlightRow: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Actualizacion exacta para weightsHiddenOutput[${j}][0]`,
+                        [
+                            `weightsHiddenOutput[${j}][0] += learningRate * outputErrors[0] * hidden[${j}]`,
+                            `weightsHiddenOutput[${j}][0] += ${formatNumber(learningRate, 1)} * ${formatNumber(state.outputErrors[0], 4)} * ${formatNumber(state.hidden[j], 4)}`,
+                            `weightsHiddenOutput[${j}][0] += ${formatNumber(state.deltaWeightsHiddenOutput[j][0], 5)}`,
+                            `weightsHiddenOutput[${j}][0] pasa de ${formatNumber(model.weightsHiddenOutput[j][0], 4)} a ${formatNumber(state.updatedWeightsHiddenOutput[j][0], 5)}`
+                        ],
+                        "Este bloque toca solo la conexion hidden -> output."
+                    )}
+                `,
+                { id: "train-step-6", open: false, kicker: "Abrir para ver el update de weightsHiddenOutput" }
+            )}
+            ${createStepBlock(
+                "7. ACTUALIZAR BIAS OUTPUT",
+                "Despues del peso de salida, el metodo ajusta biasOutput. Este paso es corto pero forma parte real del codigo.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "biasOutput antes",
+                            "Valor actual guardado en el objeto.",
+                            [model.biasOutput],
+                            ["biasOutput"],
+                            ["biasOutput[0]"],
+                            {}
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "deltaBiasOutput",
+                            "La correccion es learningRate * outputErrors[0].",
+                            [state.deltaBiasOutput],
+                            ["deltaBiasOutput"],
+                            ["biasOutput[0]"],
+                            {}
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "biasOutput despues",
+                            "Asi quedaria tras una iteracion.",
+                            [state.updatedBiasOutput],
+                            ["biasOutput"],
+                            ["biasOutput[0]"],
+                            {}
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        "Actualizacion exacta para biasOutput[0]",
+                        [
+                            "biasOutput[0] += learningRate * outputErrors[0]",
+                            `biasOutput[0] += ${formatNumber(learningRate, 1)} * ${formatNumber(state.outputErrors[0], 4)}`,
+                            `biasOutput[0] += ${formatNumber(state.deltaBiasOutput[0], 5)}`,
+                            `biasOutput[0] pasa de ${formatNumber(model.biasOutput[0], 4)} a ${formatNumber(state.updatedBiasOutput[0], 5)}`
+                        ],
+                        "Este ajuste afecta a toda la salida, no solo a una neurona oculta."
+                    )}
+                `,
+                { id: "train-step-7", open: false, kicker: "Abrir para ver el update de biasOutput" }
+            )}
+            ${createStepBlock(
+                "8. ACTUALIZAR PESOS INPUT -> HIDDEN",
+                "Aca el metodo vuelve a la primera capa y corrige weightsInputHidden usando hiddenErrors e inputs. Es el bloque mas parecido a una multiplicacion de matrices de cuaderno.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "inputs^T",
+                            "Vector 2 x 1. Es el mismo arreglo inputs, mostrado en columna para ver la multiplicacion.",
+                            [[state.inputs[0]], [state.inputs[1]]],
+                            ["inputs[0]", "inputs[1]"],
+                            ["columna"],
+                            {}
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "hiddenErrors",
+                            "Vector 1 x 6.",
+                            [state.hiddenErrors],
+                            ["hiddenErrors"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">*</div>
+                        ${createMatrixCard(
+                            "learningRate",
+                            "Vector 1 x 1.",
+                            [[learningRate]],
+                            ["learningRate"],
+                            ["valor"],
+                            {}
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "deltaWeightsInputHidden",
+                            "Matriz 2 x 6. Esta es la correccion que luego se suma a weightsInputHidden.",
+                            state.deltaWeightsInputHidden,
+                            ["inputs[0]", "inputs[1]"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    <div class="math-row" style="margin-top: 14px;">
+                        ${createMatrixCard(
+                            "deltaBiasHidden",
+                            "Vector 1 x 6.",
+                            [state.deltaBiasHidden],
+                            ["deltaBiasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        ${createMatrixCard(
+                            "weightsInputHidden nuevo",
+                            "Matriz 2 x 6 despues de sumar la correccion.",
+                            state.updatedWeightsInputHidden,
+                            ["inputs[0]", "inputs[1]"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Actualizacion exacta de la columna ${j}`,
+                        [
+                            `weightsInputHidden[0][${j}] += learningRate * hiddenErrors[${j}] * inputs[0]`,
+                            `deltaWeightsInputHidden[0][${j}] = learningRate * hiddenErrors[${j}] * inputs[0]`,
+                            `deltaWeightsInputHidden[0][${j}] = ${formatNumber(learningRate, 1)} * ${formatNumber(state.hiddenErrors[j], 4)} * ${formatNumber(state.inputs[0], 2)}`,
+                            `deltaWeightsInputHidden[0][${j}] = ${formatNumber(state.deltaWeightsInputHidden[0][j], 5)}`,
+                            `weightsInputHidden[0][${j}] pasa de ${formatNumber(model.weightsInputHidden[0][j], 4)} a ${formatNumber(state.updatedWeightsInputHidden[0][j], 5)}`,
+                            "",
+                            `weightsInputHidden[1][${j}] += learningRate * hiddenErrors[${j}] * inputs[1]`,
+                            `deltaWeightsInputHidden[1][${j}] = learningRate * hiddenErrors[${j}] * inputs[1]`,
+                            `deltaWeightsInputHidden[1][${j}] = ${formatNumber(learningRate, 1)} * ${formatNumber(state.hiddenErrors[j], 4)} * ${formatNumber(state.inputs[1], 2)}`,
+                            `deltaWeightsInputHidden[1][${j}] = ${formatNumber(state.deltaWeightsInputHidden[1][j], 5)}`,
+                            `weightsInputHidden[1][${j}] pasa de ${formatNumber(model.weightsInputHidden[1][j], 4)} a ${formatNumber(state.updatedWeightsInputHidden[1][j], 5)}`
+                        ],
+                        "Primero nace una matriz de correccion. Despues esa matriz se suma a weightsInputHidden."
+                    )}
+                `,
+                { id: "train-step-8", open: false, kicker: "Abrir para ver el update de weightsInputHidden" }
+            )}
+            ${createStepBlock(
+                "9. ACTUALIZAR BIAS HIDDEN",
+                "El ultimo bloque del sample ajusta biasHidden usando hiddenErrors. Despues de esto termina el sample y el metodo pasaria al siguiente sample o al siguiente epoch.",
+                `
+                    <div class="math-row">
+                        ${createMatrixCard(
+                            "biasHidden antes",
+                            "Vector actual del modelo.",
+                            [model.biasHidden],
+                            ["biasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">+</div>
+                        ${createMatrixCard(
+                            "deltaBiasHidden",
+                            "Cada posicion es learningRate * hiddenErrors[j].",
+                            [state.deltaBiasHidden],
+                            ["deltaBiasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                        <div class="math-op">=</div>
+                        ${createMatrixCard(
+                            "biasHidden despues",
+                            "Asi quedaria tras una iteracion.",
+                            [state.updatedBiasHidden],
+                            ["biasHidden"],
+                            hiddenLabels,
+                            { highlightCol: j }
+                        )}
+                    </div>
+                    ${createEquationCard(
+                        `Actualizacion exacta para biasHidden[${j}]`,
+                        [
+                            `biasHidden[${j}] += learningRate * hiddenErrors[${j}]`,
+                            `biasHidden[${j}] += ${formatNumber(learningRate, 1)} * ${formatNumber(state.hiddenErrors[j], 4)}`,
+                            `biasHidden[${j}] += ${formatNumber(state.deltaBiasHidden[j], 5)}`,
+                            `biasHidden[${j}] pasa de ${formatNumber(model.biasHidden[j], 4)} a ${formatNumber(state.updatedBiasHidden[j], 5)}`
+                        ],
+                        "Este es el ultimo cambio del sample. Despues el metodo volveria al for de sample o al for de epoch."
+                    )}
+                `,
+                { id: "train-step-9", open: false, kicker: "Abrir para ver el update de biasHidden" }
+            )}
+        `;
+    }
 
-        state.hidden.forEach((neuron, j) => {
-            inputContribs.push(neuron.contributionFromX1, neuron.contributionFromX2);
-            outputContribs.push(neuron.activation * neuron.outputWeight);
-        });
+    function renderRawRows(items) {
+        if (!items.length) {
+            return '<div class="raw-empty">No hay valores para mostrar.</div>';
+        }
 
-        const maxInputContrib = Math.max(...inputContribs.map(Math.abs), 0);
-        const maxOutputContrib = Math.max(...outputContribs.map(Math.abs), 0);
+        return items.map((item) => `
+            <div class="raw-row">
+                <div class="raw-key">${item.key}</div>
+                <div class="raw-val ${item.value >= 0 ? "positive-text" : "negative-text"}">${signed(item.value, 10)}</div>
+            </div>
+        `).join("");
+    }
 
-        const lines = [];
-
-        inputNodes.forEach((inputNode, i) => {
-            hiddenNodes.forEach((hiddenNode, j) => {
-                const weight = model.weightsInputHidden[i][j];
-                const contribution = i === 0
-                    ? state.hidden[j].contributionFromX1
-                    : state.hidden[j].contributionFromX2;
-
-                lines.push(`
-                    <line x1="${inputNode.x + 32}" y1="${inputNode.y}" x2="${hiddenNode.x - 32}" y2="${hiddenNode.y}"
-                        stroke="${weightColor(weight)}"
-                        stroke-width="${thickness(contribution, maxInputContrib)}"
-                        stroke-opacity="${influenceOpacity(contribution, maxInputContrib)}"
-                        stroke-linecap="round"></line>
-                `);
+    function renderRawValues() {
+        const inputHiddenItems = [];
+        model.weightsInputHidden.forEach((row, i) => {
+            row.forEach((value, j) => {
+                inputHiddenItems.push({
+                    key: `weightsInputHidden[${i}][${j}]`,
+                    value
+                });
             });
         });
 
-        hiddenNodes.forEach((hiddenNode, j) => {
-            const weight = model.weightsHiddenOutput[j];
-            const contribution = state.hidden[j].activation * weight;
-            lines.push(`
-                <line x1="${hiddenNode.x + 32}" y1="${hiddenNode.y}" x2="${outputNode.x - 32}" y2="${outputNode.y}"
-                    stroke="${weightColor(weight)}"
-                    stroke-width="${thickness(contribution, maxOutputContrib)}"
-                    stroke-opacity="${influenceOpacity(contribution, maxOutputContrib)}"
-                    stroke-linecap="round"></line>
-            `);
-        });
+        const biasHiddenItems = model.biasHidden.map((value, i) => ({
+            key: `biasHidden[${i}]`,
+            value
+        }));
 
-        svg.innerHTML = `
-            <rect x="0" y="0" width="960" height="450" rx="24" fill="transparent"></rect>
-            <text x="65" y="40" font-size="16" font-weight="700" fill="#1f2933">Entradas</text>
-            <text x="430" y="40" font-size="16" font-weight="700" fill="#1f2933">Capa oculta (sigmoid)</text>
-            <text x="790" y="40" font-size="16" font-weight="700" fill="#1f2933">Salida lineal</text>
-            ${lines.join("")}
-            ${inputNodes.map((node) => createNode(node.x, node.y, node.label, node.value, "input")).join("")}
-            ${hiddenNodes.map((node) => createNode(node.x, node.y, node.label, node.value, "hidden")).join("")}
-            ${createNode(outputNode.x, outputNode.y, outputNode.label, outputNode.value, "output")}
-            <text x="830" y="278" text-anchor="middle" font-size="12" fill="#6b7280">bias salida = ${formatNumber(model.biasOutput, 3)}</text>
-        `;
-    }
+        const outputItems = model.weightsHiddenOutput.map((row, i) => ({
+            key: `weightsHiddenOutput[${i}][0]`,
+            value: row[0]
+        })).concat([
+            {
+                key: "biasOutput[0]",
+                value: model.biasOutput[0]
+            }
+        ]);
 
-    function renderNeuronCards(state) {
-        neuronsGrid.innerHTML = state.hidden.map((neuron) => {
-            const activationPercent = neuron.activation * 100;
-            const contribution = neuron.activation * neuron.outputWeight;
-            return `
-                <article class="neuron-card detail-card" data-detail-type="neuron" data-neuron-index="${neuron.index}" role="button" tabindex="0" aria-label="Ver detalle de la neurona h${neuron.index + 1}">
-                    <div class="neuron-top">
-                        <h3>Neurona h${neuron.index + 1}</h3>
-                        <div class="${neuron.outputWeight >= 0 ? "value-positive" : "value-negative"}">
-                            w salida ${signed(neuron.outputWeight, 3)}
-                        </div>
-                    </div>
-                    <p class="explain">
-                        z = (${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][neuron.index], 3)})
-                        + (${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][neuron.index], 3)})
-                        + ${formatNumber(neuron.bias, 3)}
-                    </p>
-                    <div class="activation-bar">
-                        <div class="activation-fill" style="width:${activationPercent}%;"></div>
-                    </div>
-                    <div class="neuron-stats">
-                        <div>z = ${formatNumber(neuron.z, 4)}</div>
-                        <div>a = sigmoid(z) = ${formatNumber(neuron.activation, 4)}</div>
-                        <div>aporte a salida = ${signed(contribution, 4)}</div>
-                    </div>
-                    <p class="detail-hint">Click para ver formulas y definiciones.</p>
-                </article>
-            `;
-        }).join("");
-    }
+        document.getElementById("rawInputHiddenMatrix").innerHTML = createMatrixCard(
+            "weightsInputHidden",
+            "Matriz real 2 x 6 almacenada en tu objeto.",
+            model.weightsInputHidden,
+            ["weightsInputHidden[0][j]", "weightsInputHidden[1][j]"],
+            ["[0]", "[1]", "[2]", "[3]", "[4]", "[5]"],
+            {}
+        );
 
-    function renderTables(state) {
-        const inputHiddenTable = document.getElementById("inputHiddenTable");
-        const hiddenOutputTable = document.getElementById("hiddenOutputTable");
-        const contributionTable = document.getElementById("contributionTable");
+        document.getElementById("rawBiasHiddenMatrix").innerHTML = createMatrixCard(
+            "biasHidden",
+            "Vector real 1 x 6 almacenado en tu objeto.",
+            [model.biasHidden],
+            ["biasHidden"],
+            ["[0]", "[1]", "[2]", "[3]", "[4]", "[5]"],
+            {}
+        );
 
-        inputHiddenTable.innerHTML = `
-            <tr>
-                <th></th>
-                ${model.biasHidden.map((_, j) => `<th>h${j + 1}</th>`).join("")}
-            </tr>
-            <tr>
-                <th>x1</th>
-                ${model.weightsInputHidden[0].map((weight) => `<td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 3)}</td>`).join("")}
-            </tr>
-            <tr>
-                <th>x2</th>
-                ${model.weightsInputHidden[1].map((weight) => `<td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 3)}</td>`).join("")}
-            </tr>
-            <tr>
-                <th>bias</th>
-                ${model.biasHidden.map((bias) => `<td class="${bias >= 0 ? "value-positive" : "value-negative"}">${signed(bias, 3)}</td>`).join("")}
-            </tr>
+        document.getElementById("rawOutputMatrix").innerHTML = `
+            ${createMatrixCard(
+                "weightsHiddenOutput",
+                "Matriz real 6 x 1 almacenada en tu objeto.",
+                model.weightsHiddenOutput,
+                ["[0]", "[1]", "[2]", "[3]", "[4]", "[5]"],
+                ["[0]"],
+                {}
+            )}
+            ${createMatrixCard(
+                "biasOutput",
+                "Vector real 1 x 1 almacenado en tu objeto.",
+                [model.biasOutput],
+                ["biasOutput"],
+                ["[0]"],
+                {}
+            )}
         `;
 
-        hiddenOutputTable.innerHTML = `
-            <tr><th>Neurona</th><th>Peso a salida</th></tr>
-            ${model.weightsHiddenOutput.map((weight, j) => `
-                <tr>
-                    <td>h${j + 1}</td>
-                    <td class="${weight >= 0 ? "value-positive" : "value-negative"}">${signed(weight, 4)}</td>
-                </tr>
-            `).join("")}
-            <tr>
-                <td>bias salida</td>
-                <td class="${model.biasOutput >= 0 ? "value-positive" : "value-negative"}">${signed(model.biasOutput, 4)}</td>
-            </tr>
-        `;
-
-        const sorted = [...state.outputContributions].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
-        contributionTable.innerHTML = `
-            ${sorted.map((item) => `
-                <tr>
-                    <td>h${item.index + 1}</td>
-                    <td>${formatNumber(item.activation, 4)} * ${signed(item.outputWeight, 3)}</td>
-                    <td class="${item.contribution >= 0 ? "value-positive" : "value-negative"}">${signed(item.contribution, 4)}</td>
-                </tr>
-            `).join("")}
-            <tr>
-                <td>bias</td>
-                <td>-</td>
-                <td class="${model.biasOutput >= 0 ? "value-positive" : "value-negative"}">${signed(model.biasOutput, 4)}</td>
-            </tr>
-        `;
-    }
-
-    function renderRawWeights() {
-        document.getElementById("rawInputHidden").textContent = model.weightsInputHidden
-            .map((row, i) => row.map((value, j) => `weightsInputHidden[${i}][${j}] = ${value.toFixed(10)}`).join("\n"))
-            .join("\n");
-
-        document.getElementById("rawBiasHidden").textContent = model.biasHidden
-            .map((value, i) => `biasHidden[${i}] = ${value.toFixed(10)}`)
-            .join("\n");
-
-        document.getElementById("rawOutputWeights").textContent = model.weightsHiddenOutput
-            .map((value, i) => `weightsHiddenOutput[${i}][0] = ${value.toFixed(10)}`)
-            .concat([`biasOutput[0] = ${model.biasOutput.toFixed(10)}`])
-            .join("\n");
-    }
-
-    function renderText(state) {
-        document.getElementById("input1Value").textContent = formatNumber(state.x1, 2);
-        document.getElementById("input2Value").textContent = formatNumber(state.x2, 2);
-        document.getElementById("expectedValue").textContent = formatNumber(state.expected, 4);
-        document.getElementById("predictionValue").textContent = formatNumber(state.prediction, 4);
-        document.getElementById("errorValue").textContent = formatNumber(Math.abs(state.expected - state.prediction), 4);
-        document.getElementById("outputBiasValue").textContent = formatNumber(model.biasOutput, 4);
-
-        const firstHidden = state.hidden[0];
-        document.getElementById("hiddenFormulaSummary").textContent =
-            `h1 = sigmoid((${formatNumber(state.x1, 2)} * ${formatNumber(model.weightsInputHidden[0][0], 4)}) + ` +
-            `(${formatNumber(state.x2, 2)} * ${formatNumber(model.weightsInputHidden[1][0], 4)}) + ` +
-            `${formatNumber(model.biasHidden[0], 4)}) = ${formatNumber(firstHidden.activation, 4)}`;
-
-        const computedOutputPieces = state.hidden
-            .map((neuron, index) => `(${formatNumber(neuron.activation, 4)} * ${formatNumber(model.weightsHiddenOutput[index], 4)})`)
-            .join(" + ");
-        document.getElementById("outputFormulaSummary").textContent =
-            `y = ${formatNumber(model.biasOutput, 4)} + ${computedOutputPieces} = ${formatNumber(state.prediction, 4)}`;
-
-        const strongestPositive = [...state.outputContributions]
-            .sort((a, b) => b.contribution - a.contribution)[0];
-        const strongestNegative = [...state.outputContributions]
-            .sort((a, b) => a.contribution - b.contribution)[0];
-
-        document.getElementById("modelInsight").textContent =
-            `Ahora mismo la neurona h${strongestPositive.index + 1} es la que mas empuja la salida hacia arriba ` +
-            `(${signed(strongestPositive.contribution, 4)}), mientras que h${strongestNegative.index + 1} es la que mas la baja ` +
-            `(${signed(strongestNegative.contribution, 4)}). Eso muestra que la red no hace una suma directa; ` +
-            `combina varias micro-decisiones y despues las mezcla para construir la respuesta final.`;
+        document.getElementById("rawInputHidden").innerHTML = renderRawRows(inputHiddenItems);
+        document.getElementById("rawBiasHidden").innerHTML = renderRawRows(biasHiddenItems);
+        document.getElementById("rawOutput").innerHTML = renderRawRows(outputItems);
     }
 
     function update() {
-        const x1 = Number(input1.value);
-        const x2 = Number(input2.value);
-        const state = computeState(x1, x2);
-        currentState = state;
-        renderText(state);
-        drawNetwork(state);
-        renderNeuronCards(state);
-        renderTables(state);
+        const state = computeState(Number(input1.value), Number(input2.value));
+        renderHiddenSelector();
+        renderHeaderMetrics(state);
+        renderModelVariables();
+        renderPredict(state);
+        renderTrain(state);
+        renderRawValues();
     }
 
     input1.addEventListener("input", update);
     input2.addEventListener("input", update);
-    detailPanelClose.addEventListener("click", closeDetailPanel);
+
     document.addEventListener("click", (event) => {
         if (!(event.target instanceof Element)) {
             return;
         }
-        const card = event.target.closest(".detail-card");
-        if (!card) {
-            return;
+
+        const anchor = event.target.closest('a[href^="#"]');
+        if (anchor) {
+            const href = anchor.getAttribute("href");
+            if (href) {
+                const target = document.querySelector(href);
+                if (target instanceof HTMLDetailsElement) {
+                    target.open = true;
+                }
+            }
         }
-        openDetailFromCard(card);
-    });
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !detailPanel.hidden) {
-            closeDetailPanel();
+
+        const button = event.target.closest("[data-hidden-index]");
+        if (!button) {
             return;
         }
 
-        if (!(event.target instanceof Element)) {
-            return;
-        }
-        const card = event.target.closest(".detail-card");
-        if (!card) {
-            return;
-        }
-
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openDetailFromCard(card);
-        }
+        selectedHiddenIndex = Number(button.dataset.hiddenIndex);
+        update();
     });
 
-    renderRawWeights();
+    document.addEventListener("toggle", (event) => {
+        const detail = event.target;
+        if (!(detail instanceof HTMLDetailsElement)) {
+            return;
+        }
+
+        const isStepBlock = detail.classList.contains("step-block");
+        const isRawBlock = detail.classList.contains("raw-block");
+
+        if ((!isStepBlock && !isRawBlock) || !detail.open) {
+            return;
+        }
+
+        const parent = detail.parentElement;
+        if (!parent) {
+            return;
+        }
+
+        const selector = isStepBlock ? ".step-block[open]" : ".raw-block[open]";
+        parent.querySelectorAll(selector).forEach((other) => {
+            if (other !== detail) {
+                other.open = false;
+            }
+        });
+    }, true);
+
     update();
 </script>
 </body>
