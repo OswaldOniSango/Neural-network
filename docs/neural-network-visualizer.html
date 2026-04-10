@@ -153,6 +153,53 @@
             align-items: start;
         }
 
+        .tabs-shell {
+            padding: 16px;
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+            backdrop-filter: blur(14px);
+        }
+
+        .top-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .top-tab {
+            appearance: none;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--ink-soft);
+            border-radius: 16px 16px 8px 8px;
+            padding: 12px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+        }
+
+        .top-tab:hover {
+            transform: translateY(-1px);
+            border-color: rgba(15, 118, 110, 0.24);
+        }
+
+        .top-tab[aria-selected="true"] {
+            background: linear-gradient(180deg, rgba(15, 118, 110, 0.12), rgba(15, 118, 110, 0.04));
+            color: var(--ink);
+            border-color: rgba(15, 118, 110, 0.26);
+            box-shadow: inset 0 -3px 0 var(--accent);
+        }
+
+        .top-tab-index {
+            color: var(--muted);
+            margin-right: 8px;
+        }
+
+        .tab-panel[hidden] {
+            display: none;
+        }
+
         .card,
         .stat,
         .matrix-card,
@@ -711,20 +758,24 @@
         </div>
     </section>
 
-    <section class="section">
-        <h2>Mapa rapido</h2>
-        <p class="section-copy">
-            Menu para saltar al bloque que queres estudiar y deja el resto minimizado.
-        </p>
-        <div class="jump-grid">
-            <a class="jump-link" href="#section-model">1. Variables del modelo</a>
-            <a class="jump-link" href="#section-predict">2. Cuando la probas</a>
-            <a class="jump-link" href="#section-train">3. Cuando entrena</a>
-            <a class="jump-link" href="#section-raw">4. Valores brutos</a>
+    <section class="section tabs-shell">
+        <div class="top-tabs" role="tablist" aria-label="Navegacion principal">
+            <button class="top-tab" type="button" role="tab" id="tab-controls" aria-selected="true" aria-controls="section-controls" data-tab-target="section-controls">
+                <span class="top-tab-index">01</span>Entradas
+            </button>
+            <button class="top-tab" type="button" role="tab" id="tab-model" aria-selected="false" aria-controls="section-model" data-tab-target="section-model" tabindex="-1">
+                <span class="top-tab-index">02</span>Variables
+            </button>
+            <button class="top-tab" type="button" role="tab" id="tab-predict" aria-selected="false" aria-controls="section-predict" data-tab-target="section-predict" tabindex="-1">
+                <span class="top-tab-index">03</span>Predict
+            </button>
+            <button class="top-tab" type="button" role="tab" id="tab-train" aria-selected="false" aria-controls="section-train" data-tab-target="section-train" tabindex="-1">
+                <span class="top-tab-index">04</span>Train
+            </button>
         </div>
     </section>
 
-    <section class="section" id="section-controls">
+    <section class="section tab-panel" id="section-controls" role="tabpanel" aria-labelledby="tab-controls">
         <h2>Entradas de prueba</h2>
         <p class="section-copy">
             Move los sliders. Toda la pagina se recalcula con esas entradas y muestra
@@ -776,7 +827,7 @@
         </div>
     </section>
 
-    <section class="section" id="section-model">
+    <section class="section tab-panel" id="section-model" role="tabpanel" aria-labelledby="tab-model" hidden>
         <h2>1. Variables del modelo</h2>
         <p class="section-copy">
             Estas son las variables cargadas en el modelo.
@@ -786,7 +837,7 @@
         <div id="modelVariables" class="stack"></div>
     </section>
 
-    <section class="section" id="section-predict">
+    <section class="section tab-panel" id="section-predict" role="tabpanel" aria-labelledby="tab-predict" hidden>
         <h2>2. Cuando la probas: predict()</h2>
         <p class="section-copy">
             Esta parte explica el camino normal de prueba. Aca no se aprende nada:
@@ -796,7 +847,7 @@
         <div id="predictSection" class="stack"></div>
     </section>
 
-    <section class="section" id="section-train">
+    <section class="section tab-panel" id="section-train" role="tabpanel" aria-labelledby="tab-train" hidden>
         <h2>3. Cuando entrena: train()</h2>
         <p class="section-copy">
             Esta parte sigue el mismo orden del metodo <code>train(...)</code>:
@@ -805,64 +856,6 @@
             actualiza pesos y bias.
         </p>
         <div id="trainSection" class="stack"></div>
-    </section>
-
-    <section class="section" id="section-raw">
-        <h2>4. Valores brutos</h2>
-        <p class="section-copy">
-            Esta vista muestra los valores exactos guardados en el modelo.
-            No hay formulas aca: solo el estado real de las variables.
-        </p>
-        <div class="raw-grid">
-            <details class="note-card raw-card raw-block" open>
-                <summary class="raw-card-head raw-summary">
-                    <div>
-                        <div class="raw-meta">2 x 6</div>
-                        <h3>weightsInputHidden</h3>
-                        <p class="section-copy">
-                            Matriz de pesos desde la entrada hacia la capa oculta. Hace click y se abre la matriz.
-                        </p>
-                    </div>
-                    <div class="step-toggle" aria-hidden="true"></div>
-                </summary>
-                <div class="raw-card-body">
-                    <div id="rawInputHiddenMatrix" class="raw-matrix-slot"></div>
-                    <div id="rawInputHidden" class="raw-list"></div>
-                </div>
-            </details>
-            <details class="note-card raw-card raw-block">
-                <summary class="raw-card-head raw-summary">
-                    <div>
-                        <div class="raw-meta">1 x 6</div>
-                        <h3>biasHidden</h3>
-                        <p class="section-copy">
-                            Un bias por cada neurona oculta. Hace click y se abre el vector.
-                        </p>
-                    </div>
-                    <div class="step-toggle" aria-hidden="true"></div>
-                </summary>
-                <div class="raw-card-body">
-                    <div id="rawBiasHiddenMatrix" class="raw-matrix-slot"></div>
-                    <div id="rawBiasHidden" class="raw-list"></div>
-                </div>
-            </details>
-            <details class="note-card raw-card raw-block">
-                <summary class="raw-card-head raw-summary">
-                    <div>
-                        <div class="raw-meta">6 x 1 + 1</div>
-                        <h3>weightsHiddenOutput y biasOutput</h3>
-                        <p class="section-copy">
-                            Pesos finales hacia la salida y el bias de salida. Hace click y se abre la matriz.
-                        </p>
-                    </div>
-                    <div class="step-toggle" aria-hidden="true"></div>
-                </summary>
-                <div class="raw-card-body">
-                    <div id="rawOutputMatrix" class="raw-matrix-slot"></div>
-                    <div id="rawOutput" class="raw-list"></div>
-                </div>
-            </details>
-        </div>
     </section>
 </div>
 
@@ -898,6 +891,8 @@
     const modelVariables = document.getElementById("modelVariables");
     const predictSection = document.getElementById("predictSection");
     const trainSection = document.getElementById("trainSection");
+    const topTabs = Array.from(document.querySelectorAll(".top-tab"));
+    const topPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
     let selectedHiddenIndex = 0;
 
@@ -916,6 +911,18 @@
 
     function classForValue(value) {
         return value >= 0 ? "positive" : "negative";
+    }
+
+    function setActiveMainTab(panelId) {
+        topTabs.forEach((tab) => {
+            const isActive = tab.dataset.tabTarget === panelId;
+            tab.setAttribute("aria-selected", String(isActive));
+            tab.tabIndex = isActive ? 0 : -1;
+        });
+
+        topPanels.forEach((panel) => {
+            panel.hidden = panel.id !== panelId;
+        });
     }
 
     function createMatrixCard(title, meta, data, rowLabels, colLabels, options = {}) {
@@ -1942,6 +1949,34 @@
     input1.addEventListener("input", update);
     input2.addEventListener("input", update);
 
+    topTabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => {
+            setActiveMainTab(tab.dataset.tabTarget);
+        });
+
+        tab.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && event.key !== "Home" && event.key !== "End") {
+                return;
+            }
+
+            event.preventDefault();
+
+            let nextIndex = index;
+            if (event.key === "ArrowRight") {
+                nextIndex = (index + 1) % topTabs.length;
+            } else if (event.key === "ArrowLeft") {
+                nextIndex = (index - 1 + topTabs.length) % topTabs.length;
+            } else if (event.key === "Home") {
+                nextIndex = 0;
+            } else if (event.key === "End") {
+                nextIndex = topTabs.length - 1;
+            }
+
+            topTabs[nextIndex].focus();
+            setActiveMainTab(topTabs[nextIndex].dataset.tabTarget);
+        });
+    });
+
     document.addEventListener("click", (event) => {
         if (!(event.target instanceof Element)) {
             return;
@@ -1954,6 +1989,13 @@
                 const target = document.querySelector(href);
                 if (target instanceof HTMLDetailsElement) {
                     target.open = true;
+                }
+
+                if (target instanceof HTMLElement) {
+                    const panel = target.closest(".tab-panel");
+                    if (panel) {
+                        setActiveMainTab(panel.id);
+                    }
                 }
             }
         }
