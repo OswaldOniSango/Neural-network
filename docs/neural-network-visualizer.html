@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explicacion de tu red neuronal</title>
+    <title>Explicacion de la red neuronal</title>
     <style>
         :root {
             --bg: #f5ecdf;
@@ -680,10 +680,10 @@
     <section class="hero">
         <div class="hero-grid">
             <div>
-                <div class="eyebrow">Esta web explica tu codigo real</div>
-                <h1>Tu red neuronal, sin inventar nombres</h1>
+                <div class="eyebrow">Esta web explica la red neuronal escrita en hava</div>
+                <h1>Red neuronal para enseñar a sumar</h1>
                 <p class="lead">
-                    Esta pagina usa los mismos nombres que aparecen en tu clase
+                    Esta pagina usa los mismos nombres que aparecen en la clase
                     <code>NeuralNetwork</code>: <code>weightsInputHidden</code>,
                     <code>biasHidden</code>, <code>weightsHiddenOutput</code>,
                     <code>biasOutput</code>, <code>hidden</code>, <code>outputs</code>,
@@ -714,7 +714,7 @@
     <section class="section">
         <h2>Mapa rapido</h2>
         <p class="section-copy">
-            Usa este menu para saltar al bloque que queres estudiar y deja el resto minimizado.
+            Menu para saltar al bloque que queres estudiar y deja el resto minimizado.
         </p>
         <div class="jump-grid">
             <a class="jump-link" href="#section-model">1. Variables del modelo</a>
@@ -779,8 +779,8 @@
     <section class="section" id="section-model">
         <h2>1. Variables del modelo</h2>
         <p class="section-copy">
-            Estas son las variables que tu objeto ya tiene cargadas. No se calculan en
-            <code>predict()</code>; <code>predict()</code> las usa. Durante
+            Estas son las variables cargadas en el modelo.
+            <code>predict()</code> las usa. Durante
             <code>train()</code>, estas mismas variables se actualizan.
         </p>
         <div id="modelVariables" class="stack"></div>
@@ -799,9 +799,8 @@
     <section class="section" id="section-train">
         <h2>3. Cuando entrena: train()</h2>
         <p class="section-copy">
-            Esta parte ya no resume el entrenamiento por formulas sueltas. Sigue el mismo
-            orden del metodo <code>train(...)</code>: toma un sample, crea
-            <code>inputs</code>, <code>expected</code>, <code>hidden</code>,
+            Esta parte sigue el mismo orden del metodo <code>train(...)</code>:
+            toma un sample, crea <code>inputs</code>, <code>expected</code>, <code>hidden</code>,
             <code>outputs</code>, hace forward pass, calcula errores y recien despues
             actualiza pesos y bias.
         </p>
@@ -811,8 +810,8 @@
     <section class="section" id="section-raw">
         <h2>4. Valores brutos</h2>
         <p class="section-copy">
-            Esta vista muestra los valores exactos guardados en el modelo, pero con formato
-            de lectura mas limpio. No hay formulas aca: solo el estado real de tus variables.
+            Esta vista muestra los valores exactos guardados en el modelo.
+            No hay formulas aca: solo el estado real de las variables.
         </p>
         <div class="raw-grid">
             <details class="note-card raw-card raw-block" open>
