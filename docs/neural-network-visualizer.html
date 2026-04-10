@@ -756,6 +756,137 @@
             color: var(--ink);
         }
 
+        .network-visual-card {
+            margin-top: 18px;
+            padding: 20px;
+        }
+
+        .network-visual-head {
+            margin-bottom: 14px;
+        }
+
+        .network-visual-head h3 {
+            margin: 0 0 8px;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+        }
+
+        .network-visual-head p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .network-stage {
+            position: relative;
+            min-height: 660px;
+            border-radius: 28px;
+            border: 1px solid var(--line);
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 26%),
+                radial-gradient(circle at 10% 90%, rgba(201, 123, 29, 0.10), transparent 24%),
+                linear-gradient(180deg, rgba(255,255,255,0.92), rgba(249,244,237,0.92));
+            padding: 28px;
+            display: grid;
+            grid-template-columns: 160px 1fr 160px;
+            gap: 24px;
+            align-items: stretch;
+            overflow: hidden;
+        }
+
+        .network-column {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .network-column.hidden-column {
+            height: 100%;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .network-column.inputs-column,
+        .network-column.output-column {
+            padding-top: 72px;
+            padding-bottom: 72px;
+        }
+
+        .network-links {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .network-link {
+            fill: none;
+            stroke-linecap: round;
+            opacity: 0.34;
+            transition: opacity 0.2s ease, stroke-width 0.2s ease;
+        }
+
+        .network-link.selected {
+            opacity: 0.92;
+        }
+
+        .network-node {
+            width: 84px;
+            min-height: 84px;
+            border-radius: 999px;
+            border: 1px solid rgba(27, 36, 48, 0.12);
+            background:
+                radial-gradient(circle at 35% 30%, rgba(255,255,255,0.98), rgba(255,255,255,0.58) 45%, rgba(15, 118, 110, 0.14) 100%);
+            box-shadow:
+                0 12px 24px rgba(27, 36, 48, 0.10),
+                inset 0 1px 0 rgba(255,255,255,0.82);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+            padding: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .network-node.output {
+            background:
+                radial-gradient(circle at 35% 30%, rgba(255,255,255,0.98), rgba(255,255,255,0.58) 45%, rgba(201, 123, 29, 0.18) 100%);
+        }
+
+        .network-node.selected {
+            transform: scale(1.1);
+            border-color: rgba(15, 118, 110, 0.28);
+            box-shadow:
+                0 18px 30px rgba(27, 36, 48, 0.14),
+                0 0 0 8px rgba(15, 118, 110, 0.09);
+        }
+
+        .network-node-label {
+            font-weight: 800;
+            color: var(--ink-soft);
+            line-height: 1.05;
+        }
+
+        .network-node-value {
+            font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .network-footnote {
+            margin-top: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
         .is-positive {
             color: var(--accent);
         }
@@ -787,6 +918,26 @@
 
             .neuron-output {
                 order: 3;
+            }
+
+            .network-stage {
+                grid-template-columns: 1fr;
+                gap: 18px;
+                padding: 20px;
+            }
+
+            .network-links {
+                display: none;
+            }
+
+            .network-column {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .network-column.hidden-column {
+                justify-content: center;
             }
 
             .connection,
@@ -982,6 +1133,43 @@
                 </div>
             </div>
         </div>
+
+        <div class="network-visual-card card">
+            <div class="network-visual-head">
+                <h3>Red completa con las 6 neuronas ocultas</h3>
+                <p id="networkVisualDescription">
+                    Vista general del flujo desde inputs hacia hidden[0..5] y despues hacia outputs[0].
+                </p>
+            </div>
+
+            <div class="network-stage" id="networkStage">
+                <svg class="network-links" id="networkLinks" viewBox="0 0 900 420" preserveAspectRatio="none"></svg>
+
+                <div class="network-column inputs-column">
+                    <div class="network-node" id="networkInput0">
+                        <div class="network-node-label">x1</div>
+                        <div class="network-node-value" id="networkInput0Value">0.0000</div>
+                    </div>
+                    <div class="network-node" id="networkInput1">
+                        <div class="network-node-label">x2</div>
+                        <div class="network-node-value" id="networkInput1Value">0.0000</div>
+                    </div>
+                </div>
+
+                <div class="network-column hidden-column" id="networkHiddenColumn"></div>
+
+                <div class="network-column output-column">
+                    <div class="network-node output" id="networkOutputNode">
+                        <div class="network-node-label">outputs[0]</div>
+                        <div class="network-node-value" id="networkOutputValue">0.0000</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="network-footnote" id="networkFootnote">
+                hidden[0] esta resaltada porque es la neurona seleccionada actualmente.
+            </p>
+        </div>
     </section>
 
     <section class="section tab-panel" id="section-model" role="tabpanel" aria-labelledby="tab-model" hidden>
@@ -1055,6 +1243,17 @@
     const neuronVisualDescription = document.getElementById("neuronVisualDescription");
     const neuronStage = document.getElementById("neuronStage");
     const neuronCore = document.getElementById("neuronCore");
+    const networkStage = document.getElementById("networkStage");
+    const networkVisualDescription = document.getElementById("networkVisualDescription");
+    const networkLinks = document.getElementById("networkLinks");
+    const networkHiddenColumn = document.getElementById("networkHiddenColumn");
+    const networkInput0 = document.getElementById("networkInput0");
+    const networkInput1 = document.getElementById("networkInput1");
+    const networkInput0Value = document.getElementById("networkInput0Value");
+    const networkInput1Value = document.getElementById("networkInput1Value");
+    const networkOutputNode = document.getElementById("networkOutputNode");
+    const networkOutputValue = document.getElementById("networkOutputValue");
+    const networkFootnote = document.getElementById("networkFootnote");
     const hiddenValueLabel = document.getElementById("hiddenValueLabel");
     const inputNode0 = document.getElementById("inputNode0");
     const inputNode1 = document.getElementById("inputNode1");
@@ -1099,6 +1298,21 @@
     function setSignedClass(element, value) {
         element.classList.remove("is-positive", "is-negative");
         element.classList.add(value >= 0 ? "is-positive" : "is-negative");
+    }
+
+    function strokeColorForValue(value, alpha = 0.7) {
+        return value >= 0
+            ? `rgba(15, 118, 110, ${alpha})`
+            : `rgba(180, 35, 24, ${alpha})`;
+    }
+
+    function getCenterWithinStage(element) {
+        const stageRect = networkStage.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
+        return {
+            x: rect.left - stageRect.left + rect.width / 2,
+            y: rect.top - stageRect.top + rect.height / 2
+        };
     }
 
     function setActiveMainTab(panelId) {
@@ -1364,6 +1578,80 @@
             radial-gradient(circle at left center, rgba(201, 123, 29, 0.10), transparent 28%),
             linear-gradient(180deg, rgba(255,255,255,0.92), rgba(249,244,237,0.92))
         `;
+    }
+
+    function renderNetworkVisual(state) {
+        const j = selectedHiddenIndex;
+
+        networkInput0Value.textContent = formatNumber(state.inputs[0], 2);
+        networkInput1Value.textContent = formatNumber(state.inputs[1], 2);
+        networkOutputValue.textContent = formatNumber(state.outputs[0], 4);
+        setSignedClass(networkOutputValue, state.outputs[0]);
+
+        networkVisualDescription.textContent =
+            `Aca ves toda la red: dos entradas, seis neuronas hidden y una salida. hidden[${j}] queda resaltada para que no pierdas el hilo.`;
+        networkFootnote.textContent =
+            `hidden[${j}] esta seleccionada. Su activacion es ${formatNumber(state.hidden[j], 4)} y su conexion a outputs[0] usa weightsHiddenOutput[${j}][0] = ${signed(model.weightsHiddenOutput[j][0], 4)}.`;
+
+        networkHiddenColumn.innerHTML = model.biasHidden.map((_, index) => `
+            <div class="network-node ${index === j ? "selected" : ""}" data-network-hidden="${index}">
+                <div class="network-node-label">hidden[${index}]</div>
+                <div class="network-node-value ${state.hidden[index] >= 0 ? "positive-text" : "negative-text"}">${formatNumber(state.hidden[index], 4)}</div>
+            </div>
+        `).join("");
+
+        const hiddenNodes = Array.from(networkHiddenColumn.querySelectorAll("[data-network-hidden]"));
+        const stageRect = networkStage.getBoundingClientRect();
+        networkLinks.setAttribute("viewBox", `0 0 ${stageRect.width} ${stageRect.height}`);
+
+        const inputPositions = [
+            { ...getCenterWithinStage(networkInput0), node: networkInput0 },
+            { ...getCenterWithinStage(networkInput1), node: networkInput1 }
+        ];
+        const hiddenPositions = hiddenNodes.map((node, index) => ({
+            ...getCenterWithinStage(node),
+            node,
+            index
+        }));
+        const outputPosition = { ...getCenterWithinStage(networkOutputNode), node: networkOutputNode };
+
+        const lines = [];
+
+        hiddenPositions.forEach((hiddenPos) => {
+            const selected = hiddenPos.index === j;
+            const inputWeight0 = model.weightsInputHidden[0][hiddenPos.index];
+            const inputWeight1 = model.weightsInputHidden[1][hiddenPos.index];
+            const outputWeight = model.weightsHiddenOutput[hiddenPos.index][0];
+
+            lines.push(`
+                <path
+                    class="network-link ${selected ? "selected" : ""}"
+                    d="M ${inputPositions[0].x} ${inputPositions[0].y} C ${inputPositions[0].x + 120} ${inputPositions[0].y}, ${hiddenPos.x - 120} ${hiddenPos.y}, ${hiddenPos.x} ${hiddenPos.y}"
+                    stroke="${strokeColorForValue(inputWeight0, selected ? 0.95 : 0.30)}"
+                    stroke-width="${selected ? 5 : 2}"
+                />
+            `);
+
+            lines.push(`
+                <path
+                    class="network-link ${selected ? "selected" : ""}"
+                    d="M ${inputPositions[1].x} ${inputPositions[1].y} C ${inputPositions[1].x + 120} ${inputPositions[1].y}, ${hiddenPos.x - 120} ${hiddenPos.y}, ${hiddenPos.x} ${hiddenPos.y}"
+                    stroke="${strokeColorForValue(inputWeight1, selected ? 0.95 : 0.30)}"
+                    stroke-width="${selected ? 5 : 2}"
+                />
+            `);
+
+            lines.push(`
+                <path
+                    class="network-link ${selected ? "selected" : ""}"
+                    d="M ${hiddenPos.x} ${hiddenPos.y} C ${hiddenPos.x + 120} ${hiddenPos.y}, ${outputPosition.x - 120} ${outputPosition.y}, ${outputPosition.x} ${outputPosition.y}"
+                    stroke="${strokeColorForValue(outputWeight, selected ? 0.95 : 0.24)}"
+                    stroke-width="${selected ? 5 : 2}"
+                />
+            `);
+        });
+
+        networkLinks.innerHTML = lines.join("");
     }
 
     function renderModelVariables() {
@@ -1832,6 +2120,7 @@
         renderPredict(state);
         renderTrain(state);
         renderNeuronVisual(state);
+        renderNetworkVisual(state);
     }
 
     topTabs.forEach((tab) => {
