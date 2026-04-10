@@ -6,22 +6,33 @@
     <title>Visualizador de Red Neuronal</title>
     <style>
         :root {
-            --bg: #f4efe6;
-            --panel: rgba(255, 250, 242, 0.9);
-            --panel-strong: #fffaf2;
-            --ink: #1f2933;
-            --muted: #6b7280;
+            --bg: #efe4d3;
+            --bg-deep: #e0cfb7;
+            --panel: rgba(255, 251, 244, 0.8);
+            --panel-strong: #fffdf8;
+            --panel-soft: rgba(255, 248, 240, 0.92);
+            --ink: #17212b;
+            --ink-soft: #31404d;
+            --muted: #667085;
             --accent: #0f766e;
+            --accent-strong: #115e59;
             --accent-soft: rgba(15, 118, 110, 0.14);
             --warm: #b45309;
+            --warm-bright: #d97706;
             --warm-soft: rgba(180, 83, 9, 0.12);
             --negative: #b42318;
             --negative-soft: rgba(180, 35, 24, 0.14);
-            --line: rgba(31, 41, 51, 0.12);
-            --shadow: 0 24px 60px rgba(31, 41, 51, 0.12);
-            --radius-xl: 28px;
-            --radius-lg: 20px;
-            --radius-md: 14px;
+            --line: rgba(23, 33, 43, 0.1);
+            --line-strong: rgba(23, 33, 43, 0.16);
+            --shadow: 0 28px 80px rgba(23, 33, 43, 0.12);
+            --shadow-soft: 0 16px 36px rgba(23, 33, 43, 0.08);
+            --radius-xl: 30px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         * {
@@ -30,38 +41,83 @@
 
         body {
             margin: 0;
+            min-height: 100vh;
+            position: relative;
             font-family: "Avenir Next", "Trebuchet MS", sans-serif;
             color: var(--ink);
             background:
-                radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 32%),
-                radial-gradient(circle at top right, rgba(180, 83, 9, 0.18), transparent 24%),
-                linear-gradient(180deg, #f8f4ed 0%, #efe7dc 100%);
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.22), transparent 30%),
+                radial-gradient(circle at 85% 10%, rgba(217, 119, 6, 0.18), transparent 24%),
+                radial-gradient(circle at 50% 100%, rgba(15, 118, 110, 0.08), transparent 35%),
+                linear-gradient(180deg, #f6efe4 0%, var(--bg) 52%, var(--bg-deep) 100%);
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 999px;
+            pointer-events: none;
+            filter: blur(18px);
+            z-index: 0;
+        }
+
+        body::before {
+            top: 72px;
+            left: -70px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(15, 118, 110, 0.14), transparent 68%);
+        }
+
+        body::after {
+            right: -110px;
+            bottom: 60px;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(217, 119, 6, 0.14), transparent 70%);
         }
 
         .page {
             width: min(1180px, calc(100% - 32px));
-            margin: 32px auto 64px;
+            margin: 28px auto 72px;
+            position: relative;
+            z-index: 1;
         }
 
         .hero,
         .panel {
-            background: var(--panel);
-            border: 1px solid rgba(255, 255, 255, 0.65);
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 248, 240, 0.82)),
+                var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.68);
             box-shadow: var(--shadow);
             backdrop-filter: blur(12px);
         }
 
+        .hero::before,
+        .panel::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 110px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), transparent);
+            pointer-events: none;
+        }
+
         .hero {
-            border-radius: 36px;
-            padding: 32px;
+            border-radius: 40px;
+            padding: 38px;
             display: grid;
-            gap: 24px;
+            gap: 28px;
         }
 
         .hero-grid {
             display: grid;
             grid-template-columns: 1.4fr 0.9fr;
-            gap: 24px;
+            gap: 28px;
         }
 
         h1, h2, h3, p {
@@ -69,28 +125,45 @@
         }
 
         h1 {
-            font-size: clamp(2.1rem, 4vw, 4rem);
-            line-height: 0.95;
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            font-size: clamp(2.7rem, 5vw, 5.2rem);
+            line-height: 0.92;
             letter-spacing: -0.04em;
-            max-width: 11ch;
+            max-width: 8.6ch;
+            text-wrap: balance;
         }
 
         h2 {
-            font-size: 1.5rem;
+            font-size: 1.62rem;
             line-height: 1.05;
-            margin-bottom: 14px;
+            margin-bottom: 18px;
+            letter-spacing: -0.03em;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel > h2::before {
+            content: "";
+            width: 10px;
+            height: 34px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--accent), rgba(15, 118, 110, 0.22));
+            box-shadow: 0 0 0 6px rgba(15, 118, 110, 0.08);
         }
 
         h3 {
-            font-size: 1rem;
+            font-size: 1.04rem;
             margin-bottom: 10px;
+            letter-spacing: -0.02em;
         }
 
         .lede {
-            color: var(--muted);
-            font-size: 1.05rem;
-            line-height: 1.6;
+            color: var(--ink-soft);
+            font-size: 1.08rem;
+            line-height: 1.72;
             max-width: 62ch;
+            text-wrap: pretty;
         }
 
         .chip-row,
@@ -105,25 +178,39 @@
             gap: 16px;
         }
 
+        .small-label {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--accent-strong);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
         .chip-row {
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
         }
 
         .chip {
-            background: var(--panel-strong);
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            padding: 12px 16px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(253, 247, 239, 0.88));
+            border: 1px solid rgba(23, 33, 43, 0.08);
+            border-radius: 22px;
+            padding: 16px 18px;
             font-size: 0.95rem;
+            box-shadow: 0 10px 22px rgba(23, 33, 43, 0.06);
         }
 
         .chip strong {
             display: block;
-            font-size: 1.05rem;
+            font-size: 1.03rem;
+            margin-bottom: 4px;
         }
 
         .summary-grid {
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
         }
 
         .summary-card,
@@ -132,10 +219,13 @@
         .neuron-card,
         .weight-card,
         .raw-card {
-            background: var(--panel-strong);
-            border: 1px solid var(--line);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.9)),
+                var(--panel-strong);
+            border: 1px solid rgba(23, 33, 43, 0.08);
             border-radius: var(--radius-lg);
-            padding: 18px;
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
         }
 
         .summary-card span,
@@ -157,10 +247,24 @@
             line-height: 1;
         }
 
+        .summary-card {
+            min-height: 120px;
+            display: grid;
+            align-content: space-between;
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 42%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.92));
+        }
+
+        .summary-card strong {
+            font-size: 1.8rem;
+            letter-spacing: -0.04em;
+        }
+
         .panel {
             border-radius: var(--radius-xl);
-            margin-top: 24px;
-            padding: 28px;
+            margin-top: 28px;
+            padding: 32px;
         }
 
         .controls-grid {
@@ -169,21 +273,24 @@
         }
 
         .control-card {
-            background: linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.7));
-            border: 1px solid rgba(15, 118, 110, 0.18);
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 35%),
+                linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.82));
+            border: 1px solid rgba(15, 118, 110, 0.16);
             border-radius: var(--radius-lg);
-            padding: 18px;
+            padding: 22px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
         .slider-block + .slider-block {
-            margin-top: 18px;
+            margin-top: 22px;
         }
 
         label {
             display: flex;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: 600;
         }
 
@@ -192,35 +299,77 @@
             accent-color: var(--accent);
         }
 
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(15, 118, 110, 0.18), rgba(23, 33, 43, 0.08));
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            margin-top: -6px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, var(--accent), #14b8a6);
+            border: 2px solid #fff;
+            box-shadow: 0 6px 16px rgba(15, 118, 110, 0.28);
+        }
+
+        input[type="range"]::-moz-range-track {
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(15, 118, 110, 0.18), rgba(23, 33, 43, 0.08));
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            background: linear-gradient(180deg, var(--accent), #14b8a6);
+            box-shadow: 0 6px 16px rgba(15, 118, 110, 0.28);
+        }
+
         .slider-hint,
         .explainer-list li,
         .formula-note,
         .training-step p,
         .raw-card p {
             color: var(--muted);
-            line-height: 1.55;
+            line-height: 1.58;
         }
 
         .metrics-grid {
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         }
 
         .metric {
             min-height: 100%;
+            display: grid;
+            align-content: start;
+            gap: 8px;
+            background:
+                radial-gradient(circle at top right, rgba(217, 119, 6, 0.08), transparent 35%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.92));
         }
 
         .metric-value {
-            font-size: 1.75rem;
+            font-size: 1.9rem;
             font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
         }
 
         .network-wrapper {
             overflow-x: auto;
             border-radius: var(--radius-lg);
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 248, 241, 0.96));
-            border: 1px solid var(--line);
-            padding: 18px;
+                radial-gradient(circle at top center, rgba(15, 118, 110, 0.08), transparent 36%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 241, 0.98));
+            border: 1px solid rgba(23, 33, 43, 0.08);
+            padding: 22px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
 
         svg {
@@ -239,8 +388,12 @@
             display: flex;
             gap: 12px;
             align-items: center;
-            color: var(--muted);
+            color: var(--ink-soft);
             font-size: 0.92rem;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.54);
+            border: 1px solid rgba(23, 33, 43, 0.06);
+            border-radius: 18px;
         }
 
         .legend-swatch {
@@ -256,78 +409,96 @@
         }
 
         .formula-card {
-            padding: 18px;
+            padding: 22px;
             border-radius: var(--radius-lg);
-            background: var(--panel-strong);
-            border: 1px solid var(--line);
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 34%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.92));
+            border: 1px solid rgba(23, 33, 43, 0.08);
         }
 
         .formula {
-            font-size: 1.05rem;
+            font-size: 1.12rem;
             margin-bottom: 8px;
             font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-            line-height: 1.5;
+            line-height: 1.6;
             word-break: break-word;
         }
 
         .detail-card {
             cursor: pointer;
-            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
         }
 
         .detail-card:hover,
         .detail-card:focus-visible {
-            transform: translateY(-2px);
-            border-color: rgba(15, 118, 110, 0.28);
-            box-shadow: 0 18px 34px rgba(31, 41, 51, 0.12);
+            transform: translateY(-3px);
+            border-color: rgba(15, 118, 110, 0.3);
+            box-shadow: 0 22px 42px rgba(23, 33, 43, 0.12);
             outline: none;
         }
 
         .detail-hint {
-            margin-top: 10px;
-            color: var(--muted);
-            font-size: 0.92rem;
+            margin-top: 14px;
+            color: var(--accent-strong);
+            font-size: 0.86rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
         }
 
         .neurons-grid {
             margin-top: 22px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
         }
 
         .neuron-card {
             position: relative;
             overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 242, 0.94));
+        }
+
+        .neuron-card::after {
+            content: "";
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, rgba(15, 118, 110, 0.85), rgba(20, 184, 166, 0.28));
         }
 
         .neuron-top {
             display: flex;
             justify-content: space-between;
             gap: 12px;
-            align-items: baseline;
+            align-items: start;
             margin-bottom: 12px;
         }
 
         .activation-bar {
             height: 12px;
             border-radius: 999px;
-            background: rgba(31, 41, 51, 0.08);
+            background: rgba(23, 33, 43, 0.08);
             overflow: hidden;
-            margin: 12px 0;
+            margin: 14px 0 16px;
         }
 
         .activation-fill {
             height: 100%;
             border-radius: 999px;
             background: linear-gradient(90deg, #0f766e, #14b8a6);
+            box-shadow: 0 0 24px rgba(15, 118, 110, 0.28);
         }
 
         .neuron-stats {
             display: grid;
             font-family: "JetBrains Mono", "SFMono-Regular", monospace;
             font-size: 0.9rem;
-            gap: 8px;
+            gap: 10px;
         }
 
         .value-positive {
@@ -346,6 +517,8 @@
         .training-step {
             position: relative;
             padding-top: 48px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.9));
         }
 
         .step-number {
@@ -365,7 +538,7 @@
         .weight-columns,
         .raw-grid {
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            margin-top: 18px;
+            margin-top: 20px;
         }
 
         .weight-table,
@@ -380,14 +553,14 @@
         .weight-table td,
         .contribution-list td {
             border-bottom: 1px solid rgba(31, 41, 51, 0.08);
-            padding: 8px 10px 8px 0;
+            padding: 10px 10px 10px 0;
             text-align: left;
             font-family: "JetBrains Mono", "SFMono-Regular", monospace;
             vertical-align: top;
         }
 
         .weight-table th {
-            color: var(--muted);
+            color: var(--ink-soft);
             font-family: "Avenir Next", "Trebuchet MS", sans-serif;
             font-weight: 700;
         }
@@ -422,11 +595,14 @@
         }
 
         .callout {
-            margin-top: 20px;
-            padding: 18px;
+            margin-top: 22px;
+            padding: 22px;
             border-radius: var(--radius-lg);
-            background: linear-gradient(90deg, rgba(180, 83, 9, 0.12), rgba(255, 255, 255, 0.7));
+            background:
+                radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 32%),
+                linear-gradient(90deg, rgba(180, 83, 9, 0.12), rgba(255, 255, 255, 0.78));
             border: 1px solid rgba(180, 83, 9, 0.18);
+            box-shadow: var(--shadow-soft);
         }
 
         .callout strong {
@@ -436,7 +612,9 @@
 
         .detail-panel {
             margin-top: 22px;
-            background: linear-gradient(180deg, #fffaf2 0%, #f7efe3 100%);
+            background:
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 36%),
+                linear-gradient(180deg, #fffaf2 0%, #f7efe3 100%);
             border-radius: 28px;
             border: 1px solid rgba(31, 41, 51, 0.12);
             box-shadow: 0 20px 50px rgba(20, 24, 31, 0.12);
@@ -452,12 +630,13 @@
 
         .detail-panel-title {
             margin: 0;
+            font-size: 1.2rem;
         }
 
         .detail-panel-close {
             border: 0;
             border-radius: 999px;
-            background: rgba(31, 41, 51, 0.08);
+            background: rgba(15, 118, 110, 0.1);
             color: var(--ink);
             padding: 10px 14px;
             cursor: pointer;
@@ -466,7 +645,7 @@
 
         .detail-panel-close:hover,
         .detail-panel-close:focus-visible {
-            background: rgba(31, 41, 51, 0.14);
+            background: rgba(15, 118, 110, 0.18);
             outline: none;
         }
 
@@ -484,6 +663,13 @@
             color: var(--ink);
         }
 
+        code {
+            padding: 0.18em 0.42em;
+            border-radius: 8px;
+            background: rgba(23, 33, 43, 0.06);
+            font-size: 0.94em;
+        }
+
         ul {
             margin: 14px 0 0;
             padding-left: 20px;
@@ -491,6 +677,10 @@
 
         li + li {
             margin-top: 8px;
+        }
+
+        ::selection {
+            background: rgba(15, 118, 110, 0.18);
         }
 
         @media (max-width: 920px) {
@@ -506,11 +696,36 @@
 
             .hero,
             .panel {
-                padding: 22px;
+                padding: 24px;
+            }
+
+            h1 {
+                max-width: 10ch;
             }
         }
 
         @media (max-width: 640px) {
+            .hero {
+                padding: 24px;
+            }
+
+            .panel {
+                padding: 24px 20px;
+            }
+
+            h1 {
+                font-size: clamp(2.4rem, 14vw, 3.5rem);
+            }
+
+            h2 {
+                font-size: 1.38rem;
+                align-items: start;
+            }
+
+            .chip {
+                border-radius: 18px;
+            }
+
             .weight-table,
             .contribution-list {
                 font-size: 0.82rem;
@@ -521,6 +736,22 @@
             .contribution-list td:first-child {
                 width: 64px;
             }
+
+            .detail-panel-top,
+            .neuron-top {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .detail-card {
+                transition: none;
+            }
         }
     </style>
 </head>
@@ -530,7 +761,7 @@
         <div class="hero-grid">
             <div>
                 <p class="small-label">Modelo entrenado para aproximar una suma</p>
-                <h1>Entendiento nuestra red neuronal</h1>
+                <h1>Entendiendo nuestra red neuronal</h1>
                 <p class="lede">
                     Esta pagina traduce tus pesos y biases a algo visual. El modelo toma dos entradas,
                     las pasa por 6 neuronas ocultas con funcion sigmoide y produce una salida lineal.
