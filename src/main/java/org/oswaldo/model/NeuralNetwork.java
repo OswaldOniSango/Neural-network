@@ -100,7 +100,7 @@ public class NeuralNetwork implements Serializable {
                 double[] hidden = new double[hiddenSize];
                 double[] outputs = new double[outputSize];
 
-                // FORWARD PASS
+                // Forward pass to hidden
                 for (int j = 0; j < hiddenSize; j++) {
                     double sum = biasHidden[j];
                     for (int i = 0; i < inputSize; i++) {
@@ -109,22 +109,23 @@ public class NeuralNetwork implements Serializable {
                     hidden[j] = sigmoid(sum);
                 }
 
+                // forward pass to output (lineal)
                 for (int k = 0; k < outputSize; k++) {
                     double sum = biasOutput[k];
                     for (int j = 0; j < hiddenSize; j++) {
                         sum += hidden[j] * weightsHiddenOutput[j][k];
                     }
-                    outputs[k] = sum; // salida lineal
+                    outputs[k] = sum;
                 }
 
-                // ERROR EN LA SALIDA
+                // Calculate the error in the output
                 double[] outputErrors = new double[outputSize];
                 for (int k = 0; k < outputSize; k++) {
                     outputErrors[k] = expected[k] - outputs[k];
                     totalError += outputErrors[k] * outputErrors[k];
                 }
 
-                // ERROR EN LA CAPA OCULTA
+                // Calulate the error in the hidden layer
                 double[] hiddenErrors = new double[hiddenSize];
                 for (int j = 0; j < hiddenSize; j++) {
                     double error = 0.0;
@@ -134,26 +135,26 @@ public class NeuralNetwork implements Serializable {
                     hiddenErrors[j] = error * sigmoidDerivative(hidden[j]);
                 }
 
-                // ACTUALIZAR PESOS HIDDEN -> OUTPUT
+                // Update the hidden weights
                 for (int j = 0; j < hiddenSize; j++) {
                     for (int k = 0; k < outputSize; k++) {
                         weightsHiddenOutput[j][k] += learningRate * outputErrors[k] * hidden[j];
                     }
                 }
 
-                // ACTUALIZAR BIAS OUTPUT
+                // Update the bias output
                 for (int k = 0; k < outputSize; k++) {
                     biasOutput[k] += learningRate * outputErrors[k];
                 }
 
-                // ACTUALIZAR PESOS INPUT HIDDEN
+                // Update the input weights
                 for (int i = 0; i < inputSize; i++) {
                     for (int j = 0; j < hiddenSize; j++) {
                         weightsInputHidden[i][j] += learningRate * hiddenErrors[j] * inputs[i];
                     }
                 }
 
-                // ACTUALIZAR BIAS HIDDEN
+                // Update the bias hidden
                 for (int j = 0; j < hiddenSize; j++) {
                     biasHidden[j] += learningRate * hiddenErrors[j];
                 }
